@@ -58,7 +58,7 @@ Before running the script, you must have the following installed:
 
 With all dependencies installed and the virtual environment activated, you can run the script as follows:
 ```sh
-python FaceRecognition.py
+python emotion_recognition.py
 ```
 
 ## Exiting the Program
