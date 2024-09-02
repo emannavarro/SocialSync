@@ -2,7 +2,7 @@ import cv2
 import tensorflow as tf
 
 class_names = ["Angry", "Happy", "Sad", "Surprise"]
-model = tf.keras.models.load_model("model.h5")  # Move model loading outside the loop to optimize
+model = tf.keras.models.load_model("../ml/model.h5")  # Move model loading outside the loop to optimize
 
 
 def detect_emotion(frame_p):
@@ -22,7 +22,7 @@ def preprocess(frame_p):
 
 
 def detect_face(frame_p):
-    cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+    cascade = cv2.CascadeClassifier('../ml/haarcascade_frontalface_default.xml')
     gray = cv2.cvtColor(frame_p, cv2.COLOR_BGR2GRAY)
     faces = cascade.detectMultiScale(gray, 1.1, 4)
 
