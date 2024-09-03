@@ -1,0 +1,8 @@
+runtime: python39  # Use the appropriate runtime version
+
+handlers:
+  - url: /.*
+    script: auto
+
+# Optional: You can specify an entrypoint if using a custom server (e.g., gunicorn)
+entrypoint: gunicorn -b :$PORT main:app
