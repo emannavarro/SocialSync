@@ -14,7 +14,8 @@ CREATE TABLE Users (
     User_ID INT AUTO_INCREMENT PRIMARY KEY,
     First_Name VARCHAR(255) NOT NULL,
     Last_Name VARCHAR(255) NOT NULL,
-    Email_Address VARCHAR(255) NOT NULL UNIQUE
+    Email_Address VARCHAR(255) NOT NULL UNIQUE,
+    Password VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB;
 
 -- Create the ASD_Patients table
