@@ -1,17 +1,18 @@
 import string
-from random import random
+from random import sample
 
-from flask import Flask, jsonify
+from flask_bcrypt import Bcrypt
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 import os
-
-from sqlalchemy import text
 
 # Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)  # Initialize bcrypt for hashing passwords
+
 
 # Construct the SQLAlchemy Database URI using the environment variables
 user = os.getenv('MYSQL_USER')
@@ -28,52 +29,68 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{user}:{password}@{hos
 db = SQLAlchemy(app)
 
 class User(db.Model):
-    __tablename__ = 'User'  # Make sure the table name matches your actual table name
-
+    __tablename__ = 'Users'  # Use 'Users' to match the actual table name in the database
     id = db.Column('User_ID', db.Integer, primary_key=True)
-    first_name = db.Column('First_Name', db.String(80), nullable=False)
-    last_name = db.Column('Last_Name', db.String(80), nullable=False)
-    email = db.Column('Email_Address', db.String(120), unique=True, nullable=False)
+    first_name = db.Column('First_Name', db.String(255), nullable=False)
+    last_name = db.Column('Last_Name', db.String(255), nullable=False)
+    email = db.Column('Email_Address', db.String(255), unique=True, nullable=False)
+    password = db.Column('Password', db.String(255), nullable=False)
 
     def __repr__(self):
         return f'<User {self.first_name} {self.last_name} ({self.email})>'
 
+# Register Route to hash and store password securely
+@app.route('/register', methods=['POST'])
+def register_user():
+    data = request.json
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    email = data.get('email')
+    password = data.get('password')
+
+    if not (first_name, last_name, email, password):
+        return jsonify({'error': 'Missing information'}), 400
+
+    # Hash password using bcrypt
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    try:
+        # Create a new user instance and save to the database
+        new_user = User(first_name=first_name, last_name=last_name, email=email, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify({'message': 'User registered successfully!'}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 
-# Function to generate a random string
-def generate_random_string(length=8):
-    return ''.join(random.sample(string.ascii_letters + string.digits, k=length))
+# Basic Login Route
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    email = data.get('email')
+    password = data.get('password')
 
+    if not (email and password):
+        return jsonify({'error': 'Missing email or password'}), 400
 
+    # Fetch the user by email
+    user = User.query.filter_by(email=email).first()
 
-# Flask route to create a user with the name "John Doe"
-@app.route('/test', methods=['POST', 'GET'])
-def create_john_doe():
-    first_name = "John"
-    last_name = "Doe"
-    email = "john.doe@example.com"
+    if user and bcrypt.check_password_hash(user.password, password):
+        # Return basic success message with user info
+        return jsonify({
+            'message': 'Login successful',
+            'user_id': user.id,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email
+        }), 200
+    else:
+        return jsonify({'error': 'Invalid credentials'}), 401
 
-    # Construct the SQL INSERT query
-    insert_query = text("""
-        INSERT INTO Users (First_Name, Last_Name, Email_Address)
-        VALUES (:first_name, :last_name, :email)
-    """)
-
-    # Execute the query
-    db.session.execute(insert_query, {'first_name': first_name, 'last_name': last_name, 'email': email})
-    db.session.commit()
-
-    return jsonify({
-        'message': 'John Doe created successfully!',
-        'first_name': first_name,
-        'last_name': last_name,
-        'email': email
-    })
-@app.route('/delete_user/<int:uid>')
-def delete_user(uid):
-    db.session.execute(text("DELETE FROM users WHERE id = :uid"), {'uid': uid})
-    db.session.commit()
-    return f"User with id {uid} deleted successfully!"
 
 # Run the application
 if __name__ == '__main__':
