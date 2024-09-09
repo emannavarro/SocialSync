@@ -1,5 +1,6 @@
+import requests
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 
 class RegisterPage(QWidget):
     def __init__(self, parent=None):
@@ -15,10 +16,10 @@ class RegisterPage(QWidget):
         title.setStyleSheet("font-size: 32px; font-weight: bold; color: white;")
         layout.addWidget(title)
 
-        # Username field
-        self.username = QLineEdit()
-        self.username.setPlaceholderText("Username")
-        self.username.setStyleSheet("""
+        # First Name field
+        self.first_name = QLineEdit()
+        self.first_name.setPlaceholderText("First Name")
+        self.first_name.setStyleSheet("""
             QLineEdit {
                 background-color: #333;
                 color: white;
@@ -31,7 +32,25 @@ class RegisterPage(QWidget):
                 border: 2px solid #4682B4;
             }
         """)
-        layout.addWidget(self.username)
+        layout.addWidget(self.first_name)
+
+        # Last Name field
+        self.last_name = QLineEdit()
+        self.last_name.setPlaceholderText("Last Name")
+        self.last_name.setStyleSheet("""
+            QLineEdit {
+                background-color: #333;
+                color: white;
+                font-size: 18px;
+                padding: 10px;
+                border-radius: 10px;
+                border: 2px solid #1E90FF;
+            }
+            QLineEdit:focus {
+                border: 2px solid #4682B4;
+            }
+        """)
+        layout.addWidget(self.last_name)
 
         # Email field
         self.email = QLineEdit()
@@ -89,6 +108,7 @@ class RegisterPage(QWidget):
                 transform: scale(1.05);
             }
         """)
+        btn_register.clicked.connect(self.handle_register)  # Connect the register button to the register logic
         layout.addWidget(btn_register)
 
         # Back button to return to the landing page
@@ -108,3 +128,45 @@ class RegisterPage(QWidget):
         """)
         btn_back.clicked.connect(lambda: parent.show_landing_page())
         layout.addWidget(btn_back)
+
+    def handle_register(self):
+        # Gather registration information
+        first_name = self.first_name.text()
+        last_name = self.last_name.text()
+        email = self.email.text()
+        password = self.password.text()
+
+        # Check if any fields are empty
+        if not (first_name and last_name and email and password):
+            self.show_message("Error", "All fields are required.")
+            return
+
+        # Send POST request to Flask backend register endpoint
+        try:
+            response = requests.post("http://127.0.0.1:8081/register", json={
+                "first_name": first_name,
+                "last_name": last_name,
+                "email": email,
+                "password": password
+            })
+
+            if response.status_code == 201:
+                # Registration successful
+                self.show_message("Success", "User registered successfully!")
+            elif response.status_code == 400:
+                # Missing or invalid fields
+                self.show_message("Error", "Missing or invalid information.")
+            else:
+                # Other errors
+                self.show_message("Error", f"An error occurred: {response.status_code}")
+        except requests.exceptions.RequestException as e:
+            # Handle any exceptions during the HTTP request
+            self.show_message("Error", f"Failed to connect to server: {str(e)}")
+
+    def show_message(self, title, message):
+        # Display a message box with a given title and message
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle(title)
+        msg_box.setText(message)
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        msg_box.exec_()
