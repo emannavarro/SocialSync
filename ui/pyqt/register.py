@@ -1,6 +1,9 @@
+import sys
+
 import requests
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QApplication
+
 
 class RegisterPage(QWidget):
     def __init__(self, parent=None):
@@ -170,3 +173,12 @@ class RegisterPage(QWidget):
         msg_box.setText(message)
         msg_box.setStandardButtons(QMessageBox.Ok)
         msg_box.exec_()
+
+
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = RegisterPage()
+    window.show()
+    sys.exit(app.exec_())

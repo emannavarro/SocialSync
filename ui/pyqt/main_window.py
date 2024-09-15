@@ -35,3 +35,4 @@ class MainWindow(QMainWindow):
     def show_register_page(self):
         self.stacked_widget.setCurrentWidget(self.register_page)
         self.stacked_widget.repaint()
+
