@@ -4,14 +4,18 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QColor
 
 class LoginPage(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.initUI()
 
     def initUI(self):
         self.setWindowTitle('SocialSync Care')
         self.setFixedSize(1280, 720)  # Set fixed size to 1280x720 pixels
-        self.setStyleSheet("background-color: #4DB6AC;")  # Background color
+        self.setStyleSheet("""
+              QWidget {
+                  background-color: #71B89A;
+              }
+          """)
 
         # Container for login elements
         container = QFrame(self)
@@ -55,17 +59,17 @@ class LoginPage(QWidget):
         signInButton.clicked.connect(lambda: print("Sign In button clicked"))
         layout.addWidget(signInButton)
 
-        # Forgot Password Link
-        forgotPassLabel = QLabel("Forgot Password?")
-        forgotPassLabel.setFont(QFont('Arial', 12))
-        forgotPassLabel.setAlignment(Qt.AlignCenter)
-        layout.addWidget(forgotPassLabel)
-
         # New User Button
         newUserButton = QPushButton("New User?")
         self.setupButton(newUserButton, "#B2DFDB", "#80CBC4")  # Lighter color button
         newUserButton.clicked.connect(lambda: print("New User button clicked"))
         layout.addWidget(newUserButton)
+
+        # Forgot Password Link
+        forgotPassLabel = QLabel("Forgot Password?")
+        forgotPassLabel.setFont(QFont('Arial', 12))
+        forgotPassLabel.setAlignment(Qt.AlignCenter)
+        layout.addWidget(forgotPassLabel)
 
     def setupLineEdit(self, lineEdit):
         lineEdit.setFont(QFont('Arial', 16))
