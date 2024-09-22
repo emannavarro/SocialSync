@@ -15,7 +15,6 @@ CREATE TABLE Users (
     Middle_Name VARCHAR(255),
     Last_Name VARCHAR(255) NOT NULL,
     Email_Address VARCHAR(255) NOT NULL UNIQUE,
-    Password VARCHAR(255) NOT NULL,
     Dob DATE NOT NULL,
     Sex ENUM('Male', 'Female', 'Other') NOT NULL,
     Country VARCHAR(255) NOT NULL,
@@ -23,6 +22,7 @@ CREATE TABLE Users (
     City VARCHAR(255) NOT NULL,
     State VARCHAR(255) NOT NULL,
     Zip_Code VARCHAR(10) NOT NULL
+    Password VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB;
 
 -- Create the ASD_Patients table
