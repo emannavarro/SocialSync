@@ -1,184 +1,124 @@
 import sys
-
-import requests
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
+                             QPushButton, QLabel, QLineEdit, QFrame, QGridLayout,
+                             QRadioButton, QHBoxLayout, QTableWidget, QTableWidgetItem)
+from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QApplication
 
 
-class RegisterPage(QWidget):
+class RegistrationForm(QMainWindow):
     def __init__(self, parent=None):
-        super(RegisterPage, self).__init__(parent)
+        super().__init__()
+        self.setFixedSize(1280, 720)
+        self.setStyleSheet("background-color: #8FBC8F;")  # Sea Green color
+        self.parent = parent
 
-        layout = QVBoxLayout()
-        layout.setContentsMargins(100, 100, 100, 100)
-        layout.setSpacing(20)
-        self.setLayout(layout)
+        # Main widget and layout
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        main_layout = QVBoxLayout(central_widget)
+        main_layout.setAlignment(Qt.AlignCenter)
 
-        title = QLabel("Register")
+        # White rounded rectangle container
+        container = QFrame()
+        container.setStyleSheet("""
+            background-color: white;
+            border-radius: 40px;
+        """)
+        container.setFixedSize(800, 600)
+        container_layout = QVBoxLayout(container)
+        container_layout.setAlignment(Qt.AlignTop)
+        container_layout.setSpacing(20)
+
+        # Title
+        title = QLabel("Registration")
+        title.setStyleSheet("""
+            color: #8FBC8F;
+            font-size: 36px;
+            font-weight: bold;
+        """)
         title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet("font-size: 32px; font-weight: bold; color: white;")
-        layout.addWidget(title)
 
-        # First Name field
-        self.first_name = QLineEdit()
-        self.first_name.setPlaceholderText("First Name")
-        self.first_name.setStyleSheet("""
-            QLineEdit {
-                background-color: #333;
-                color: white;
-                font-size: 18px;
-                padding: 10px;
-                border-radius: 10px;
-                border: 2px solid #1E90FF;
-            }
-            QLineEdit:focus {
-                border: 2px solid #4682B4;
-            }
-        """)
-        layout.addWidget(self.first_name)
+        # Form layout
+        form_layout = QGridLayout()
+        form_layout.setColumnStretch(1, 1)
+        form_layout.setColumnStretch(3, 1)
 
-        # Last Name field
-        self.last_name = QLineEdit()
-        self.last_name.setPlaceholderText("Last Name")
-        self.last_name.setStyleSheet("""
-            QLineEdit {
-                background-color: #333;
-                color: white;
-                font-size: 18px;
-                padding: 10px;
-                border-radius: 10px;
-                border: 2px solid #1E90FF;
-            }
-            QLineEdit:focus {
-                border: 2px solid #4682B4;
-            }
-        """)
-        layout.addWidget(self.last_name)
+        # Form fields
+        fields = [
+            ("First Name:", 0, 0), ("Address:", 0, 2),
+            ("Middle Name:", 1, 0), ("City:", 1, 2),
+            ("Last Name:", 2, 0), ("Zip:", 2, 2),
+            ("Date of Birth:", 3, 0), ("State:", 3, 2),
+            ("Email Address:", 4, 0), ("Country:", 4, 2),
+            ("Phone Number:", 5, 0), ("Gender:", 5, 2)
+        ]
 
-        # Email field
-        self.email = QLineEdit()
-        self.email.setPlaceholderText("Email")
-        self.email.setStyleSheet("""
-            QLineEdit {
-                background-color: #333;
-                color: white;
-                font-size: 18px;
-                padding: 10px;
-                border-radius: 10px;
-                border: 2px solid #1E90FF;
-            }
-            QLineEdit:focus {
-                border: 2px solid #4682B4;
-            }
-        """)
-        layout.addWidget(self.email)
+        for label_text, row, col in fields:
+            label = QLabel(label_text)
+            label.setStyleSheet("color: #20B2AA; font-size: 14px; font-weight: bold;")
+            form_layout.addWidget(label, row, col)
 
-        # Password field
-        self.password = QLineEdit()
-        self.password.setPlaceholderText("Password")
-        self.password.setEchoMode(QLineEdit.Password)
-        self.password.setStyleSheet("""
-            QLineEdit {
-                background-color: #333;
-                color: white;
-                font-size: 18px;
-                padding: 10px;
-                border-radius: 10px;
-                border: 2px solid #1E90FF;
-            }
-            QLineEdit:focus {
-                border: 2px solid #4682B4;
-            }
-        """)
-        layout.addWidget(self.password)
-
-        # Register button
-        btn_register = QPushButton("Register")
-        btn_register.setStyleSheet("""
-            QPushButton {
-                background-color: #1E90FF;
-                color: white;
-                font-size: 20px;
-                font-weight: bold;
-                padding: 15px 30px;
-                border-radius: 15px;
-                border: 2px solid #1E90FF;
-                box-shadow: 3px 3px 10px #000000;
-            }
-            QPushButton:hover {
-                background-color: #4682B4;
-                border: 2px solid #4682B4;
-                transform: scale(1.05);
-            }
-        """)
-        btn_register.clicked.connect(self.handle_register)  # Connect the register button to the register logic
-        layout.addWidget(btn_register)
-
-        # Back button to return to the landing page
-        btn_back = QPushButton("Back")
-        btn_back.setStyleSheet("""
-            QPushButton {
-                background-color: #333;
-                color: white;
-                font-size: 16px;
-                padding: 10px 20px;
-                border-radius: 10px;
-                margin-top: 20px;
-            }
-            QPushButton:hover {
-                background-color: #555;
-            }
-        """)
-        btn_back.clicked.connect(lambda: parent.show_landing_page())
-        layout.addWidget(btn_back)
-
-    def handle_register(self):
-        # Gather registration information
-        first_name = self.first_name.text()
-        last_name = self.last_name.text()
-        email = self.email.text()
-        password = self.password.text()
-
-        # Check if any fields are empty
-        if not (first_name and last_name and email and password):
-            self.show_message("Error", "All fields are required.")
-            return
-
-        # Send POST request to Flask backend register endpoint
-        try:
-            response = requests.post("http://127.0.0.1:8081/register", json={
-                "first_name": first_name,
-                "last_name": last_name,
-                "email": email,
-                "password": password
-            })
-
-            if response.status_code == 201:
-                # Registration successful
-                self.show_message("Success", "User registered successfully!")
-            elif response.status_code == 400:
-                # Missing or invalid fields
-                self.show_message("Error", "Missing or invalid information.")
+            if label_text != "Gender:":
+                line_edit = QLineEdit()
+                line_edit.setStyleSheet("background-color: #D3D3D3; border: none; padding: 5px;")
+                form_layout.addWidget(line_edit, row, col + 1)
             else:
-                # Other errors
-                self.show_message("Error", f"An error occurred: {response.status_code}")
-        except requests.exceptions.RequestException as e:
-            # Handle any exceptions during the HTTP request
-            self.show_message("Error", f"Failed to connect to server: {str(e)}")
+                gender_layout = QHBoxLayout()
+                male_radio = QRadioButton("Male")
+                female_radio = QRadioButton("Female")
+                gender_layout.addWidget(male_radio)
+                gender_layout.addWidget(female_radio)
+                form_layout.addLayout(gender_layout, row, col + 1)
 
-    def show_message(self, title, message):
-        # Display a message box with a given title and message
-        msg_box = QMessageBox()
-        msg_box.setWindowTitle(title)
-        msg_box.setText(message)
-        msg_box.setStandardButtons(QMessageBox.Ok)
-        msg_box.exec_()
+        # User table
+        user_table = QTableWidget(1, 3)
+        user_table.setHorizontalHeaderLabels(["Name", "Password", "Email"])
+        user_table.setItem(0, 0, QTableWidgetItem("John Doe"))
+        user_table.setItem(0, 1, QTableWidgetItem("Password123"))
+        user_table.setItem(0, 2, QTableWidgetItem("johndoe@gmail.com"))
+        user_table.setStyleSheet("background-color: white; border: none;")
+        user_table.horizontalHeader().setStyleSheet("font-weight: bold;")
+
+        # Buttons
+        add_user_button = self.create_button("Add User")
+        submit_button = self.create_button("Submit")
+        cancel_button = QPushButton("Cancel")
+        cancel_button.setStyleSheet("""
+            background-color: transparent;
+            color: #8FBC8F;
+            border: none;
+            font-size: 16px;
+        """)
+
+        # Add widgets to container layout
+        container_layout.addWidget(title)
+        container_layout.addLayout(form_layout)
+        container_layout.addWidget(user_table)
+        container_layout.addWidget(add_user_button, alignment=Qt.AlignCenter)
+        container_layout.addWidget(submit_button, alignment=Qt.AlignCenter)
+        container_layout.addWidget(cancel_button, alignment=Qt.AlignCenter)
+
+        # Add container to main layout
+        main_layout.addWidget(container)
+
+    def create_button(self, text):
+        button = QPushButton(text)
+        button.setStyleSheet("""
+            background-color: #8FBC8F;
+            color: white;
+            border-radius: 20px;
+            padding: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            width: 200px;
+        """)
+        button.clicked.connect(lambda: print(f"{text} clicked"))
+        return button
 
 
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = RegisterPage()
+    window = RegistrationForm()
     window.show()
     sys.exit(app.exec_())

@@ -1,6 +1,8 @@
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QStackedWidget
-from ui.pyqt.login import LoginPage
-from ui.pyqt.register import RegisterPage
+from ui.pyqt.guardian_login import LoginPage
+from ui.pyqt.register import RegistrationForm
+#from ui.pyqt.dashboard_ui import CustomPage  # Your dashboard page
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -12,23 +14,26 @@ class MainWindow(QMainWindow):
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
 
-        # Add the landing, login, and register pages to the stack
-        self.login_page = LoginPage(self)
-        self.register_page = RegisterPage(self)
+        # Add the login, register, and dashboard pages to the stack
+        self.login_page = LoginPage(self)  # Pass MainWindow as reference
+        self.setStyleSheet("background-color: #71B89A;")
+        self.setFont(QFont("Josefin Sans", 12))
+
+
+        self.register_page = RegistrationForm(self)
+        #self.dashboard_page = CustomPage(self)
 
         self.stacked_widget.addWidget(self.login_page)
         self.stacked_widget.addWidget(self.register_page)
+        #self.stacked_widget.addWidget(self.dashboard_page)
 
         self.stacked_widget.setCurrentWidget(self.login_page)
-
-        self.stacked_widget.setStyleSheet("background-color: #71B89A;")  # Background color
-
 
     def show_login_page(self):
         self.stacked_widget.setCurrentWidget(self.login_page)
-        self.stacked_widget.repaint()
 
     def show_register_page(self):
         self.stacked_widget.setCurrentWidget(self.register_page)
-        self.stacked_widget.repaint()
 
+    def show_dashboard_page(self):
+        self.stacked_widget.setCurrentWidget(self.dashboard_page)

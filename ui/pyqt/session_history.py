@@ -1,12 +1,14 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
-                             QPushButton, QLabel, QFrame, QHBoxLayout)
+                             QPushButton, QLabel, QFrame, QHBoxLayout, QScrollArea)
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtCore import Qt, QSize
 
-class CareProfile(QMainWindow):
+
+class HistoryPage(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.setWindowTitle("History")
         self.setFixedSize(1280, 720)
         self.setStyleSheet("background-color: #8FBC8F;")  # Sea Green color
 
@@ -43,77 +45,33 @@ class CareProfile(QMainWindow):
         header_layout.addWidget(sign_out_button)
 
         # Content area
-        content = QWidget()
-        content_layout = QHBoxLayout(content)
+        content = QScrollArea()
+        content.setWidgetResizable(True)
+        content.setStyleSheet("background-color: transparent; border: none;")
+        content_widget = QWidget()
+        content_layout = QVBoxLayout(content_widget)
         content_layout.setContentsMargins(40, 40, 40, 40)
-        content_layout.setSpacing(0)  # Set spacing to 0 to control the gap manually
+        content_layout.setSpacing(20)
 
-        # Left sidebar
-        sidebar = QWidget()
-        sidebar.setFixedWidth(300)
-        sidebar_layout = QVBoxLayout(sidebar)
-        sidebar_layout.setAlignment(Qt.AlignTop)
-        sidebar_layout.setSpacing(20)
+        sessions_label = QLabel("Sessions:")
+        sessions_label.setStyleSheet("color: white; font-size: 32px; font-weight: bold;")
+        content_layout.addWidget(sessions_label)
 
-        info_labels = ["Full Name", "Email", "Caretaker ID"]
-        for label in info_labels:
-            info_label = QLabel(label)
-            info_label.setStyleSheet("color: white; font-size: 24px; font-weight: bold;")
-            sidebar_layout.addWidget(info_label)
+        # Sample session data
+        sessions = [
+            {"name": "John Doe", "date": "02-20-2024", "time_elapsed": "2hrs 30mins"},
+            {"name": "John Doe", "date": "03-25-2024", "time_elapsed": "30mins"},
+            {"name": "Jane Smith", "date": "04-01-2024", "time_elapsed": "1hr 45mins"},
+            {"name": "Alice Johnson", "date": "04-05-2024", "time_elapsed": "45mins"},
+            {"name": "Bob Williams", "date": "04-10-2024", "time_elapsed": "3hrs 15mins"},
+        ]
 
-        # Vertical line
-        line = QFrame()
-        line.setFrameShape(QFrame.VLine)
-        line.setStyleSheet("color: white;")  # Set the color of the line to white
+        for session in sessions:
+            session_widget = self.create_session_widget(session)
+            content_layout.addWidget(session_widget)
 
-        # Right content
-        right_content = QWidget()
-        right_layout = QVBoxLayout(right_content)
-        right_layout.setAlignment(Qt.AlignTop)
-        right_layout.setSpacing(20)
-
-        # Reset section
-        reset_section = QWidget()
-        reset_layout = QVBoxLayout(reset_section)
-        reset_layout.setAlignment(Qt.AlignCenter)
-        reset_layout.setSpacing(20)
-
-        reset_label = QLabel("Reset")
-        reset_label.setStyleSheet("color: white; font-size: 36px; font-weight: bold;")
-        reset_label.setAlignment(Qt.AlignCenter)
-
-        password_button = self.create_button("Password", "#D3D3D3", text_color="#4682B4")
-        email_button = self.create_button("Email", "#D3D3D3", text_color="#4682B4")
-
-        reset_layout.addWidget(reset_label)
-        reset_layout.addWidget(password_button)
-        reset_layout.addWidget(email_button)
-
-        # Accounts section
-        accounts_section = QWidget()
-        accounts_layout = QVBoxLayout(accounts_section)
-        accounts_layout.setAlignment(Qt.AlignCenter)
-        accounts_layout.setSpacing(20)
-
-        accounts_label = QLabel("Accounts")
-        accounts_label.setStyleSheet("color: white; font-size: 36px; font-weight: bold;")
-        accounts_label.setAlignment(Qt.AlignCenter)
-
-        edit_users_button = self.create_button("Edit Users", "#D3D3D3", text_color="#4682B4")
-
-        accounts_layout.addWidget(accounts_label)
-        accounts_layout.addWidget(edit_users_button)
-
-        # Add sections to right layout
-        right_layout.addWidget(reset_section)
-        right_layout.addSpacing(40)
-        right_layout.addWidget(accounts_section)
-        right_layout.addStretch(1)
-
-        # Add widgets to content layout
-        content_layout.addWidget(sidebar)
-        content_layout.addWidget(line)
-        content_layout.addWidget(right_content)
+        content_layout.addStretch(1)
+        content.setWidget(content_widget)
 
         # Bottom buttons
         bottom_buttons = QWidget()
@@ -147,12 +105,36 @@ class CareProfile(QMainWindow):
                 background-color: #A9A9A9;
             }}
         """)
-        button.setFixedSize(200, 50)
+        button.setFixedSize(120, 40)
         button.clicked.connect(lambda: print(f"{text} button clicked"))
         return button
 
+    def create_session_widget(self, session):
+        widget = QFrame()
+        widget.setStyleSheet("""
+            QFrame {
+                background-color: rgba(255, 255, 255, 0.2);
+                border-radius: 10px;
+                padding: 10px;
+            }
+        """)
+        layout = QHBoxLayout(widget)
+
+        name_date = QLabel(f"{session['name']} {session['date']}")
+        name_date.setStyleSheet("color: white; font-size: 18px;")
+
+        time_elapsed = QLabel(f"Time Elapsed: {session['time_elapsed']}")
+        time_elapsed.setStyleSheet("color: white; font-size: 18px;")
+
+        layout.addWidget(name_date)
+        layout.addStretch(1)
+        layout.addWidget(time_elapsed)
+
+        return widget
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = CareProfile()
+    window = HistoryPage()
     window.show()
     sys.exit(app.exec_())
