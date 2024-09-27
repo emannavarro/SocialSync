@@ -1,41 +1,47 @@
-import sys
-from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QFrame)
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QFrame
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QColor
+from PyQt5.QtGui import QFont, QPixmap
+
 
 class LoginPage(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, main_window):
+        super().__init__()
+        self.main_window = main_window  # Store reference to MainWindow
         self.initUI()
 
     def initUI(self):
         self.setWindowTitle('SocialSync Care')
-        self.setFixedSize(1280, 720)  # Set fixed size to 1280x720 pixels
-        self.setStyleSheet("""
-              QWidget {
-                  background-color: #71B89A;
-              }
-          """)
+        self.setFixedSize(1280, 720)
+        self.setStyleSheet("background-color: #71B89A;")
 
         # Container for login elements
         container = QFrame(self)
-        container.setFixedSize(700, 700)  # Fixed size for the container
+        container.setFixedSize(700, 700)
         container.setStyleSheet("background-color: #FFFFFF; border-radius: 20px;")
-        # container.move(440, 150)  # Adjust position to center the container
-        container.move(290, 10)  # Adjust position to center the container
+        container.move(290, 10)
 
         layout = QVBoxLayout(container)
         layout.setSpacing(20)
-        layout.setContentsMargins(40, 40, 40, 40)  # Margins inside the container
+        layout.setContentsMargins(40, 40, 40, 40)
 
-        # Placeholder for the logo
-        logoLabel = QLabel('Logo')
-        logoLabel.setFont(QFont('Arial', 20))
-        logoLabel.setAlignment(Qt.AlignCenter)
-        layout.addWidget(logoLabel)
+        # Logo placeholder
+        logoLabel = QLabel()  # Create a QLabel without specifying 'self'
+        pixmap = QPixmap("A:\\OneDrive\\Documents\\Ali's Documents\\SE_\\CMPE 195B Senior Project II\\SocialSync\\ui\\PyQt\\images\\v20_308.png")
+
+        # Check if the image was loaded successfully
+        if pixmap.isNull():
+            print("Failed to load image: images/v20_308.png")
+
+        # Scale the pixmap to a smaller size, keeping the aspect ratio
+        scaled_pixmap = pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        logoLabel.setPixmap(scaled_pixmap)  # Set the scaled pixmap onto the label
+        logoLabel.setAlignment(Qt.AlignCenter)  # Align the label to center
+        layout.addWidget(logoLabel)  # Add the label to the layout within the container
+
 
         # Title
-        titleLabel = QLabel('SocialSync Care')
+        titleLabel = QLabel('SocialSync Care', self)
         titleLabel.setFont(QFont('Arial', 24))
         titleLabel.setAlignment(Qt.AlignCenter)
         layout.addWidget(titleLabel)
@@ -55,15 +61,10 @@ class LoginPage(QWidget):
 
         # Sign In Button
         signInButton = QPushButton("Sign In")
-        self.setupButton(signInButton, "#00897B", "#00695C")  # Adjust the button color
-        signInButton.clicked.connect(lambda: print("Sign In button clicked"))
+        self.setupButton(signInButton, "#00897B", "#00695C")
+        signInButton.clicked.connect(self.go_to_dashboard)
         layout.addWidget(signInButton)
 
-        # New User Button
-        newUserButton = QPushButton("New User?")
-        self.setupButton(newUserButton, "#B2DFDB", "#80CBC4")  # Lighter color button
-        newUserButton.clicked.connect(lambda: print("New User button clicked"))
-        layout.addWidget(newUserButton)
 
         # Forgot Password Link
         forgotPassLabel = QLabel("Forgot Password?")
@@ -80,8 +81,8 @@ class LoginPage(QWidget):
         button.setStyleSheet(f"QPushButton {{ background-color: {color}; color: black; border-radius: 10px; padding: 10px; }}"
                              f"QPushButton:hover {{ background-color: {hoverColor}; }}")
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    ex = LoginPage()
-    ex.show()
-    sys.exit(app.exec_())
+    def go_to_dashboard(self):
+        self.main_window.show_dashboard_page()  # Use the main_window reference
+
+    def go_to_register(self):
+        self.main_window.show_register_page()  # Use the main_window reference

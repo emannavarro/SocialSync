@@ -8,18 +8,24 @@ DROP TABLE IF EXISTS ASD_Practitioners;
 DROP TABLE IF EXISTS ASD_Patients;
 DROP TABLE IF EXISTS Users;
 
--- Create the Users table
--- Stores user information, including a unique email address for each user
+-- Create the Users table with additional fields as specified in the EER diagram
 CREATE TABLE Users (
     User_ID INT AUTO_INCREMENT PRIMARY KEY,
     First_Name VARCHAR(255) NOT NULL,
+    Middle_Name VARCHAR(255),
     Last_Name VARCHAR(255) NOT NULL,
     Email_Address VARCHAR(255) NOT NULL UNIQUE,
+    Dob DATE NOT NULL,
+    Sex ENUM('Male', 'Female', 'Other') NOT NULL,
+    Country VARCHAR(255) NOT NULL,
+    Street_Address VARCHAR(255) NOT NULL,
+    City VARCHAR(255) NOT NULL,
+    State VARCHAR(255) NOT NULL,
+    Zip_Code VARCHAR(10) NOT NULL
     Password VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB;
 
 -- Create the ASD_Patients table
--- Links to Users via User_ID, with a cascade on delete
 CREATE TABLE ASD_Patients (
     Patient_ID INT AUTO_INCREMENT PRIMARY KEY,
     User_ID INT NOT NULL,
@@ -28,7 +34,6 @@ CREATE TABLE ASD_Patients (
 ) ENGINE=InnoDB;
 
 -- Create the ASD_Practitioners table
--- Practitioners can exist without being immediately assigned a patient
 CREATE TABLE ASD_Practitioners (
     Practitioner_ID INT AUTO_INCREMENT PRIMARY KEY,
     User_ID INT NOT NULL,
@@ -36,7 +41,6 @@ CREATE TABLE ASD_Practitioners (
 ) ENGINE=InnoDB;
 
 -- Create the patient_practitioner table for many-to-many relationships
--- Supports multiple patients being assigned to multiple practitioners
 CREATE TABLE patient_practitioner (
     Patient_ID INT NOT NULL,
     Practitioner_ID INT NOT NULL,
@@ -46,7 +50,6 @@ CREATE TABLE patient_practitioner (
 ) ENGINE=InnoDB;
 
 -- Create the Sessions table
--- Tracks session details with both patients and practitioners
 CREATE TABLE Sessions (
     Session_ID INT AUTO_INCREMENT PRIMARY KEY,
     Patient_ID INT NOT NULL,
@@ -64,20 +67,18 @@ CREATE INDEX idx_practitioner ON ASD_Practitioners(User_ID);
 CREATE INDEX idx_sessions ON Sessions(Session_Date, Patient_ID, Practitioner_ID);
 
 -- Insert sample data into the database
-INSERT INTO Users (First_Name, Last_Name, Email_Address) VALUES ('John', 'Doe', 'john.doe@example.com');
-INSERT INTO Users (First_Name, Last_Name, Email_Address) VALUES ('Jane', 'Smith', 'jane.smith@example.com');
+INSERT INTO Users (First_Name, Middle_Name, Last_Name, Email_Address, Password, Dob, Sex, Country, Street_Address, City, State, Zip_Code)
+VALUES ('John', 'Quincy', 'Doe', 'john.doe@example.com', 'securepassword', '1990-05-21', 'Male', 'USA', '123 Elm St', 'Anytown', 'CA', '90210');
+INSERT INTO Users (First_Name, Middle_Name, Last_Name, Email_Address, Password, Dob, Sex, Country, Street_Address, City, State, Zip_Code)
+VALUES ('Jane', NULL, 'Smith', 'jane.smith@example.com', 'securepassword123', '1985-08-15', 'Female', 'USA', '456 Oak St', 'Othertown', 'NY', '10001');
+
 INSERT INTO ASD_Patients (User_ID, Enrollment_Date) VALUES (1, '2023-01-01');
 INSERT INTO ASD_Practitioners (User_ID) VALUES (2);
 
--- Assign a patient to a practitioner using the many-to-many table
 INSERT INTO patient_practitioner (Patient_ID, Practitioner_ID) VALUES (1, 1);
-
--- Insert a session between a patient and practitioner
 INSERT INTO Sessions (Patient_ID, Practitioner_ID, Session_Date, Session_Start_Time, Session_End_Time)
 VALUES (1, 1, '2023-01-02', '09:00:00', '10:00:00');
 
--- Test cases and functional tests are commented out to avoid automatic execution
--- These have been tested and verified as of 2023-09-28
 /*
 -- Test cases for unique constraints and foreign key relationships
 INSERT INTO Users (First_Name, Last_Name, Email_Address) VALUES ('Jim', 'Beam', 'john.doe@example.com');
