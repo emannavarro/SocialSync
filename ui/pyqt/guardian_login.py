@@ -87,7 +87,7 @@ class LoginPage(QWidget):
                              f"QPushButton:hover {{ background-color: {hoverColor}; }}")
 
     def go_to_dashboard(self):
-        self.main_window.show_dashboard_page()  # Use the main_window reference
+        self.main_window.show_presesh_page()  # Use the main_window reference
 
     def go_to_register(self):
         self.main_window.show_register_page()  # Use the main_window reference

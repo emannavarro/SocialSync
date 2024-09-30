@@ -1,19 +1,22 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QSlider, QCheckBox
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QSlider, QCheckBox, QMainWindow
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 
 
-class MainWindow(QWidget):
-    def __init__(self):
+class MainWindow(QMainWindow):
+    def __init__(self, parent):
         super().__init__()
+        self.parent = parent
         self.initUI()
+        
 
-    def initUI(self, parent=None):
+
+    def initUI(self):
+
         # Set up main window
         self.setFixedSize(1280, 720)  # Fixed window size (16:9 aspect ratio)
         self.setStyleSheet("background-color: #71b79a;")  # Background color
-        self.parent = parent
 
         # Header with a placeholder "Logo"
         self.logo_label = QLabel('Logo', self)
@@ -105,6 +108,8 @@ class MainWindow(QWidget):
         # Buttons: Skip and Continue (inside white box)
         self.skip_button = self.create_button('Skip', 230, 450, 120, 50, bg_color="white", text_color="black")
         self.continue_button = self.create_button('Continue', 410, 450, 200, 50, bg_color="#71b89a", text_color="white")
+
+        self.continue_button.clicked.connect(self.parent.show_video_window)
 
         self.show()
 

@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPixmap
 
 
+
 class LoginPage(QWidget):
     def __init__(self, main_window):
         super().__init__()

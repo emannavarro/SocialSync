@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt, QSize, QRect
 from PyQt5.QtSvg import QSvgRenderer
 
 class ProfileSetup(QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         super().__init__()
         self.setWindowTitle("Profile Setup")
         self.setFixedSize(1280, 720)
@@ -125,7 +125,7 @@ class ProfileSetup(QMainWindow):
         print("Vocal and Visual Settings clicked")
 
     def next_clicked(self):
-        self.parent.show
+        self.parent.show_vocal_visual_setting_page()
 
     def skip_clicked(self):
         print("Skip clicked")
