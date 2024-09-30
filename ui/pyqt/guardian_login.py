@@ -65,6 +65,11 @@ class LoginPage(QWidget):
         signInButton.clicked.connect(self.go_to_dashboard)
         layout.addWidget(signInButton)
 
+        # Sign In Button
+        registerButton = QPushButton("Register")
+        self.setupButton(registerButton, "#71B89A", "#00695C")
+        registerButton.clicked.connect(self.go_to_dashboard)
+        layout.addWidget(registerButton)
 
         # Forgot Password Link
         forgotPassLabel = QLabel("Forgot Password?")

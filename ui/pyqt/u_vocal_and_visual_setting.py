@@ -9,10 +9,11 @@ class MainWindow(QWidget):
         super().__init__()
         self.initUI()
 
-    def initUI(self):
+    def initUI(self, parent=None):
         # Set up main window
         self.setFixedSize(1280, 720)  # Fixed window size (16:9 aspect ratio)
         self.setStyleSheet("background-color: #71b79a;")  # Background color
+        self.parent = parent
 
         # Header with a placeholder "Logo"
         self.logo_label = QLabel('Logo', self)
