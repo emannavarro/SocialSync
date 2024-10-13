@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QPushButton, QLabel, QLineEdit, QFrame, QGridLayout,
                              QRadioButton, QHBoxLayout, QTableWidget, QTableWidgetItem)
+from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtCore import Qt
 
 
