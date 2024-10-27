@@ -17,7 +17,7 @@ if cascade.empty():
     raise IOError(f"Failed to load Haar Cascade from {cascade_path}")
 
 # for some reason this path here has to be absolute.
-model = tf.keras.models.load_model("/Users/joshuamedina/PycharmProjects/SocialSync/backend/ml/model.h5")
+model = tf.keras.models.load_model("/Users/alizargari/PycharmProjects/SocialSync/backend/ml/model.h5")
 
 
 def detect_emotion(frame_p):
