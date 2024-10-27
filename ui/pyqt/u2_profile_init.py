@@ -6,7 +6,7 @@ from PyQt5.QtCore import Qt, QSize
 import os
 
 class CustomButton(QPushButton):
-    def __init__(self, text, parent=None):
+    def __init__(self, text, parent):
         super().__init__(text, parent)
         self.setFixedHeight(50)
         self.setCursor(Qt.PointingHandCursor)
@@ -23,11 +23,12 @@ class CustomButton(QPushButton):
         painter.drawText(self.rect(), Qt.AlignCenter, self.text())
 
 class ProfileSetup(QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         super().__init__(parent)
         self.setWindowTitle("Profile Setup")
         self.setFixedSize(1280, 720)
         self.setStyleSheet("background-color: #71B89A;")
+        self.parent = parent
 
         # Main widget and layout
         central_widget = QWidget()

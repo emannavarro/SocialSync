@@ -1,9 +1,11 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QFrame
+import sys
+
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QFrame, QApplication
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPixmap
+from ui.pyqt.p2_second_register_user import RegistrationForm
 
-
-class LoginPage(QWidget):
+class GuardianLoginPage(QWidget):
     def __init__(self, main_window):
         super().__init__()
         self.main_window = main_window  # Store reference to MainWindow
@@ -41,7 +43,7 @@ class LoginPage(QWidget):
 
 
         # Title
-        titleLabel = QLabel('SocialSync Care', self)
+        titleLabel = QLabel('SocialSync Dookie', self)
         titleLabel.setFont(QFont('Arial', 24))
         titleLabel.setAlignment(Qt.AlignCenter)
         layout.addWidget(titleLabel)
@@ -91,3 +93,9 @@ class LoginPage(QWidget):
 
     def go_to_register(self):
         self.main_window.show_register_page()  # Use the main_window reference
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = GuardianLoginPage(None)
+    window.show()
+    sys.exit(app.exec_())
