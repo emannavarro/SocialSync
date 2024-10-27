@@ -2,13 +2,13 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QStackedWidget
 from ui.pyqt.guardian_login import LoginPage
 from ui.pyqt.user_login import LoginPage
-from ui.pyqt.register import RegistrationForm
+from ui.pyqt.p3_first_register import RegistrationForm
 from ui.pyqt.pre_session import CustomPage as PreSession
-from ui.pyqt.session_dashboard import MainWindow as SessionDashboard
-from ui.pyqt.profile_init import ProfileSetup
-from ui.pyqt.session_history import HistoryPage
+from ui.pyqt.u7_camera_working_session_dashboard import MainWindow as SessionDashboard
+from ui.pyqt.u2_profile_init import ProfileSetup
+from ui.pyqt.p10_session_history import HistoryPage
 from ui.pyqt.u_vocal_and_visual_setting import MainWindow as VocalVisualSetting
-from ui.pyqt.care_profile_settings import CareProfile as CareProfileSettings
+from ui.pyqt.p6_care_profile_settings import CareProfile as CareProfileSettings
 
 
 
@@ -35,6 +35,8 @@ class MainWindow(QMainWindow):
         self.vocal_visual_setting_page = VocalVisualSetting(self)
         self.care_profile_settings = CareProfileSettings(self)
 
+
+
         self.stacked_widget.addWidget(self.login_page)
         self.stacked_widget.addWidget(self.register_page)
         self.stacked_widget.addWidget(self.presesh_page)
@@ -43,6 +45,8 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.video_window)
         self.stacked_widget.addWidget(self.vocal_visual_setting_page)
         self.stacked_widget.addWidget(self.care_profile_settings)
+
+
 
 
         self.stacked_widget.setCurrentWidget(self.login_page)
