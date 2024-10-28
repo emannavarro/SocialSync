@@ -1,15 +1,15 @@
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QStackedWidget
 from ui.pyqt.guardian_login import LoginPage
-from ui.pyqt.user_login import LoginPage
+from ui.pyqt.P1_U1_user_login import LoginPage
 from ui.pyqt.p3_first_register import RegistrationForm
-from ui.pyqt.pre_session import CustomPage as PreSession
+from ui.pyqt.u4_home import MainWindow as PreSession
 from ui.pyqt.u7_camera_working_session_dashboard import MainWindow as SessionDashboard
 from ui.pyqt.u2_profile_init import ProfileSetup
 from ui.pyqt.p10_session_history import HistoryPage
 from ui.pyqt.u_vocal_and_visual_setting import MainWindow as VocalVisualSetting
-from ui.pyqt.p6_care_profile_settings import CareProfile as CareProfileSettings
-
+from ui.pyqt.p6_care_profile_settings import MainWindow as CareProfileSettings
+from ui.pyqt.p5_session_overview import OverviewScreen as SessionOverview
 
 
 class MainWindow(QMainWindow):
