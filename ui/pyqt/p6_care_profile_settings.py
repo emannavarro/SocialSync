@@ -1,159 +1,252 @@
 import sys
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
-                             QPushButton, QLabel, QFrame, QHBoxLayout)
-from PyQt5.QtGui import QFont, QPixmap
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
+                             QFrame, QSizePolicy, QGraphicsDropShadowEffect, QGridLayout)
+from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QLinearGradient
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint
 
-class CareProfile(QMainWindow):
-    def __init__(self, parent=None):
+class AnimatedButton(QPushButton):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.setStyleSheet("""
+            QPushButton {
+                background-color: #71B89A;
+                color: white;
+                border-radius: 25px;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 10px;
+            }
+            QPushButton:hover {
+                background-color: #5A9A7F;
+            }
+            QPushButton:pressed {
+                background-color: #4A8A6F;
+            }
+        """)
+        self.shadow = QGraphicsDropShadowEffect(self)
+        self.shadow.setBlurRadius(15)
+        self.shadow.setColor(QColor(0, 0, 0, 80))
+        self.shadow.setOffset(0, 5)
+        self.setGraphicsEffect(self.shadow)
+
+    def enterEvent(self, event):
+        self.animate_shadow(25, 0, 8)
+
+    def leaveEvent(self, event):
+        self.animate_shadow(15, 0, 5)
+
+    def animate_shadow(self, end_blur, end_x, end_y):
+        self.anim_blur = QPropertyAnimation(self.shadow, b"blurRadius")
+        self.anim_blur.setEndValue(end_blur)
+        self.anim_blur.setDuration(200)
+
+        self.anim_offset = QPropertyAnimation(self.shadow, b"offset")
+        self.anim_offset.setEndValue(QPoint(end_x, end_y))
+        self.anim_offset.setDuration(200)
+
+        self.anim_blur.start()
+        self.anim_offset.start()
+
+class MainWindow(QWidget):
+    def __init__(self):
         super().__init__()
-        self.setFixedSize(1280, 720)
-        self.setStyleSheet("background-color: #8FBC8F;")  # Sea Green color
-        self.parent = parent
+        self.initUI()
 
-        # Main widget and layout
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        main_layout = QVBoxLayout(central_widget)
+    def initUI(self):
+        self.setWindowTitle('Care Profile Settings')
+        self.setFixedSize(1280, 720)
+        self.setStyleSheet("background-color: #71B89A;")
+
+        main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Header
-        header = QWidget()
-        header.setStyleSheet("background-color: white;")
-        header.setFixedHeight(80)
-        header_layout = QHBoxLayout(header)
-        header_layout.setContentsMargins(20, 0, 20, 0)
+        main_layout.addWidget(self.createHeader())
+        main_layout.addWidget(self.createMainContent())
+        main_layout.addWidget(self.createBottomSection())
 
-        # Logo
-        pixmap = QPixmap("A:\\OneDrive\\Documents\\Ali's Documents\\SE_\\CMPE 195B Senior Project II\\SocialSync\\ui\\PyQt\\images\\v20_308.png")
+    def createHeader(self):
+        header_container = QWidget(self)
+        header_container.setStyleSheet("background-color: white;")
+        header_container.setFixedHeight(80)
+        header_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(15)
+        shadow.setColor(QColor(0, 0, 0, 50))
+        shadow.setOffset(0, 2)
+        header_container.setGraphicsEffect(shadow)
+
+        header_inner_layout = QHBoxLayout(header_container)
+        header_inner_layout.setContentsMargins(20, 0, 20, 0)
+        header_inner_layout.setSpacing(20)
+
+        logo_label = QLabel(self)
+        pixmap = QPixmap('images/v20_308.png')
         scaled_pixmap = pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        logo_label = QLabel()
         logo_label.setPixmap(scaled_pixmap)
-        logo_label.setFixedSize(60, 60)
+        header_inner_layout.addWidget(logo_label, alignment=Qt.AlignLeft | Qt.AlignVCenter)
 
-        title_label = QLabel("Care Profile")
-        title_label.setStyleSheet("font-size: 36px; font-weight: bold;")
+        header_title = QLabel('Care Profile Settings', self)
+        header_title.setFont(QFont('Arial', 28, QFont.Bold))
+        header_title.setStyleSheet("color: #71B89A;")
+        header_inner_layout.addWidget(header_title, alignment=Qt.AlignLeft | Qt.AlignVCenter)
 
-        sign_out_button = self.create_button("Sign Out", "#8FBC8F", text_color="white")
-        sign_out_button.setFixedSize(120, 40)
+        header_inner_layout.addStretch()
 
-        header_layout.addWidget(logo_label)
-        header_layout.addWidget(title_label)
-        header_layout.addStretch(1)
-        header_layout.addWidget(sign_out_button)
+        sign_out_button = AnimatedButton("Sign Out", self)
+        sign_out_button.setFixedSize(120, 50)
+        header_inner_layout.addWidget(sign_out_button, alignment=Qt.AlignRight | Qt.AlignVCenter)
 
-        # Content area
+        return header_container
+
+    def createMainContent(self):
         content = QWidget()
         content_layout = QHBoxLayout(content)
-        content_layout.setContentsMargins(40, 40, 40, 40)
-        content_layout.setSpacing(0)  # Set spacing to 0 to control the gap manually
+        content_layout.setContentsMargins(50, 50, 50, 50)
+        content_layout.setSpacing(40)
 
-        # Left sidebar
-        sidebar = QWidget()
-        sidebar.setFixedWidth(300)
-        sidebar_layout = QVBoxLayout(sidebar)
-        sidebar_layout.setAlignment(Qt.AlignTop)
-        sidebar_layout.setSpacing(20)
+        content_layout.addWidget(self.createLeftColumn())
+        content_layout.addWidget(self.createRightColumn())
 
-        info_labels = ["Full Name", "Email", "Caretaker ID"]
+        return content
+
+    def createLeftColumn(self):
+        left_column = QFrame()
+        left_column.setStyleSheet("""
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        """)
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(20)
+        shadow.setColor(QColor(0, 0, 0, 60))
+        shadow.setOffset(0, 10)
+        left_column.setGraphicsEffect(shadow)
+
+        left_layout = QVBoxLayout(left_column)
+        left_layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        left_layout.setSpacing(20)
+        left_layout.setContentsMargins(20, 20, 20, 20)
+
+        profile_pic_container = QLabel()
+        profile_pixmap = QPixmap("images/v25_505.png")
+        profile_pic_container.setPixmap(profile_pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        profile_pic_container.setAlignment(Qt.AlignCenter)
+        left_layout.addWidget(profile_pic_container, alignment=Qt.AlignLeft)
+
+        info_labels = ["Username", "Full Name", "Email"]
         for label in info_labels:
             info_label = QLabel(label)
             info_label.setStyleSheet("color: white; font-size: 24px; font-weight: bold;")
-            sidebar_layout.addWidget(info_label)
+            info_label.setAlignment(Qt.AlignLeft)
+            left_layout.addWidget(info_label)
 
-        # Vertical line
-        line = QFrame()
-        line.setFrameShape(QFrame.VLine)
-        line.setStyleSheet("color: white;")  # Set the color of the line to white
+        left_layout.addStretch(1)
 
-        # Right content
-        right_content = QWidget()
-        right_layout = QVBoxLayout(right_content)
-        right_layout.setAlignment(Qt.AlignTop)
+        return left_column
+
+    def createRightColumn(self):
+        right_column = QFrame()
+        right_column.setStyleSheet("""
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        """)
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(20)
+        shadow.setColor(QColor(0, 0, 0, 60))
+        shadow.setOffset(0, 10)
+        right_column.setGraphicsEffect(shadow)
+
+        right_layout = QVBoxLayout(right_column)
+        right_layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         right_layout.setSpacing(20)
-
-        # Reset section
-        reset_section = QWidget()
-        reset_layout = QVBoxLayout(reset_section)
-        reset_layout.setAlignment(Qt.AlignCenter)
-        reset_layout.setSpacing(20)
+        right_layout.setContentsMargins(20, 20, 20, 20)
 
         reset_label = QLabel("Reset")
         reset_label.setStyleSheet("color: white; font-size: 36px; font-weight: bold;")
-        reset_label.setAlignment(Qt.AlignCenter)
+        right_layout.addWidget(reset_label)
 
-        password_button = self.create_button("Password", "#D3D3D3", text_color="#4682B4")
-        email_button = self.create_button("Email", "#D3D3D3", text_color="#4682B4")
+        buttons = ["Password", "Email", "Edit Users"]
+        for text in buttons:
+            button = self.create_settings_button(text)
+            right_layout.addWidget(button)
 
-        reset_layout.addWidget(reset_label)
-        reset_layout.addWidget(password_button)
-        reset_layout.addWidget(email_button)
-
-        # Accounts section
-        accounts_section = QWidget()
-        accounts_layout = QVBoxLayout(accounts_section)
-        accounts_layout.setAlignment(Qt.AlignCenter)
-        accounts_layout.setSpacing(20)
-
-        accounts_label = QLabel("Accounts")
-        accounts_label.setStyleSheet("color: white; font-size: 36px; font-weight: bold;")
-        accounts_label.setAlignment(Qt.AlignCenter)
-
-        edit_users_button = self.create_button("Edit Users", "#D3D3D3", text_color="#4682B4")
-
-        accounts_layout.addWidget(accounts_label)
-        accounts_layout.addWidget(edit_users_button)
-
-        # Add sections to right layout
-        right_layout.addWidget(reset_section)
-        right_layout.addSpacing(40)
-        right_layout.addWidget(accounts_section)
         right_layout.addStretch(1)
 
-        # Add widgets to content layout
-        content_layout.addWidget(sidebar)
-        content_layout.addWidget(line)
-        content_layout.addWidget(right_content)
+        return right_column
 
-        # Bottom buttons
-        bottom_buttons = QWidget()
-        bottom_layout = QHBoxLayout(bottom_buttons)
-        bottom_layout.setContentsMargins(40, 0, 40, 40)
+    def createBottomSection(self):
+        section = QFrame()
+        layout = QHBoxLayout(section)
+        layout.setContentsMargins(50, 0, 50, 20)
+        layout.setSpacing(10)
 
-        help_button = self.create_button("Help", "white", text_color="#8FBC8F")
-        back_button = self.create_button("Back", "#4682B4", text_color="white")
-
-        bottom_layout.addWidget(help_button)
-        bottom_layout.addStretch(1)
-        bottom_layout.addWidget(back_button)
-
-        # Add all widgets to the main layout
-        main_layout.addWidget(header)
-        main_layout.addWidget(content)
-        main_layout.addWidget(bottom_buttons)
-
-    def create_button(self, text, bg_color, text_color="black"):
-        button = QPushButton(text)
-        button.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {bg_color};
-                color: {text_color};
-                border-radius: 20px;
-                padding: 10px;
+        help_button = AnimatedButton('Help', self)
+        help_button.setFixedSize(120, 50)
+        help_button.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: #39687C;
+                border-radius: 25px;
                 font-size: 18px;
                 font-weight: bold;
-            }}
-            QPushButton:hover {{
-                background-color: #A9A9A9;
-            }}
+            }
+            QPushButton:hover {
+                background-color: #E0E0E0;
+            }
+        """)
+        layout.addWidget(help_button, alignment=Qt.AlignLeft | Qt.AlignBottom)
+
+        layout.addStretch()
+
+        back_button = AnimatedButton('Back', self)
+        back_button.setFixedSize(120, 50)
+        back_button.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: #39687C;
+                border-radius: 25px;
+                font-size: 18px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #E0E0E0;
+            }
+        """)
+        layout.addWidget(back_button, alignment=Qt.AlignRight | Qt.AlignBottom)
+
+        return section
+
+    def create_settings_button(self, text):
+        button = AnimatedButton(text, self)
+        button.setStyleSheet("""
+            QPushButton {
+                background-color: #C1F0D1;
+                color: black;
+                border-radius: 25px;
+                font-size: 18px;
+                font-weight: bold;
+                padding: 10px;
+            }
+            QPushButton:hover {
+                background-color: #A9E4BC;
+            }
         """)
         button.setFixedSize(200, 50)
         button.clicked.connect(lambda: print(f"{text} button clicked"))
         return button
 
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        gradient = QLinearGradient(0, 0, 0, self.height())
+        gradient.setColorAt(0, QColor("#71B89A"))
+        gradient.setColorAt(1, QColor("#5A9A7F"))
+        painter.fillRect(self.rect(), gradient)
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = CareProfile()
+    window = MainWindow()
     window.show()
     sys.exit(app.exec_())
