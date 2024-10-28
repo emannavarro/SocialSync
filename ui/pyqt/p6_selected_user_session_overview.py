@@ -144,7 +144,7 @@ class OverviewScreen(QWidget):
         name_section = QVBoxLayout()
         name_label = QLabel("Individual's Name:", self)
         name_label.setFont(QFont('Arial', 21, QFont.Bold))
-        name_label.setStyleSheet("color: black;")
+        name_label.setStyleSheet("color: white;")
         name_section.addWidget(name_label)
 
         name_button = CustomButton("John Doe")
@@ -160,7 +160,7 @@ class OverviewScreen(QWidget):
         preferences_section = QVBoxLayout()
         preferences_label = QLabel("Individual's Preferences:", self)
         preferences_label.setFont(QFont('Arial', 21, QFont.Bold))
-        preferences_label.setStyleSheet("color: black;")
+        preferences_label.setStyleSheet("color: white;")
         preferences_section.addWidget(preferences_label)
 
         preferences_button = CustomButton("Teddy bear calms down John Doe")
