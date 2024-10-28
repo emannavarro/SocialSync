@@ -1,123 +1,180 @@
 import sys
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
-                             QPushButton, QLabel, QLineEdit, QFrame, QGridLayout,
-                             QRadioButton, QHBoxLayout, QTableWidget, QTableWidgetItem)
-from PyQt5.QtGui import QFont, QColor
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QRadioButton,
+                             QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QFrame,
+                             QGraphicsDropShadowEffect, QSpacerItem)
+from PyQt5.QtGui import QFont, QFontDatabase, QColor
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QTimer
 
+class AnimatedButton(QPushButton):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.setStyleSheet("""
+            QPushButton {
+                background-color: #71B89A;
+                color: white;
+                border-radius: 20px;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 10px;
+                min-width: 200px;
+            }
+            QPushButton:hover {
+                background-color: #5A9A7F;
+            }
+            QPushButton:pressed {
+                background-color: #4A8A6F;
+            }
+        """)
+        self.shadow = QGraphicsDropShadowEffect(self)
+        self.shadow.setBlurRadius(15)
+        self.shadow.setColor(QColor(0, 0, 0, 80))
+        self.shadow.setOffset(0, 5)
+        self.setGraphicsEffect(self.shadow)
 
-class RegistrationForm(QMainWindow):
+    def enterEvent(self, event):
+        self.animate_shadow(25, 0, 8)
+
+    def leaveEvent(self, event):
+        self.animate_shadow(15, 0, 5)
+
+    def animate_shadow(self, end_blur, end_x, end_y):
+        self.anim_blur = QPropertyAnimation(self.shadow, b"blurRadius")
+        self.anim_blur.setEndValue(end_blur)
+        self.anim_blur.setDuration(200)
+
+        self.anim_offset = QPropertyAnimation(self.shadow, b"offset")
+        self.anim_offset.setEndValue(QPoint(end_x, end_y))
+        self.anim_offset.setDuration(200)
+
+        self.anim_blur.start()
+        self.anim_offset.start()
+
+class RegistrationForm(QWidget):
     def __init__(self):
         super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        # Set window properties
+        self.setWindowTitle('SocialSync Registration')
         self.setFixedSize(1280, 720)
-        self.setStyleSheet("background-color: #8FBC8F;")  # Sea Green color
+        self.setStyleSheet("background-color: #71B89A;")
 
-        # Main widget and layout
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        main_layout = QVBoxLayout(central_widget)
-        main_layout.setAlignment(Qt.AlignCenter)
+        # Load custom font
+        font_id = QFontDatabase.addApplicationFont("path/to/JosefinSans-Regular.ttf")
+        if font_id != -1:
+            font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
+        else:
+            font_family = "Arial"
 
-        # White rounded rectangle container
-        container = QFrame()
-        container.setStyleSheet("""
+        # Create main layout
+        main_layout = QVBoxLayout(self)
+
+        # Create white background container
+        self.container = QFrame(self)
+        self.container.setStyleSheet("""
             background-color: white;
             border-radius: 40px;
         """)
-        container.setFixedSize(800, 600)
-        container_layout = QVBoxLayout(container)
-        container_layout.setAlignment(Qt.AlignTop)
-        container_layout.setSpacing(20)
+        self.container.setFixedSize(900, 660)
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(30)
+        shadow.setColor(QColor(0, 0, 0, 60))
+        shadow.setOffset(0, 10)
+        self.container.setGraphicsEffect(shadow)
 
-        # Title
+        # Create grid layout for form elements
+        grid = QGridLayout(self.container)
+        grid.setVerticalSpacing(15)
+        grid.setHorizontalSpacing(20)
+        grid.setContentsMargins(40, 30, 40, 30)
+
+        # Add title
         title = QLabel("Registration")
-        title.setStyleSheet("""
-            color: #8FBC8F;
-            font-size: 36px;
-            font-weight: bold;
-        """)
-        title.setAlignment(Qt.AlignCenter)
+        title.setFont(QFont(font_family, 32, QFont.Bold))
+        title.setStyleSheet("color: #71B89A; margin-bottom: 10px;")
+        grid.addWidget(title, 0, 0, 1, 4, Qt.AlignHCenter)
 
-        # Form layout
-        form_layout = QGridLayout()
-        form_layout.setColumnStretch(1, 1)
-        form_layout.setColumnStretch(3, 1)
-
-        # Form fields
+        # Create form fields
         fields = [
-            ("First Name:", 0, 0), ("Address:", 0, 2),
-            ("Middle Name:", 1, 0), ("City:", 1, 2),
-            ("Last Name:", 2, 0), ("Zip:", 2, 2),
-            ("Date of Birth:", 3, 0), ("State:", 3, 2),
-            ("Email Address:", 4, 0), ("Country:", 4, 2),
-            ("Phone Number:", 5, 0), ("Gender:", 5, 2)
+            ("First Name:", 1, 0), ("Address:", 1, 2),
+            ("Middle Name:", 2, 0), ("City:", 2, 2),
+            ("Last Name:", 3, 0), ("Zip:", 3, 2),
+            ("Date of Birth:", 4, 0), ("State:", 4, 2),
+            ("Email Address:", 5, 0), ("Country:", 5, 2),
+            ("Phone Number:", 6, 0), ("Sex:", 6, 2),
+            ("Password:", 7, 0), ("Confirm Password:", 7, 2),
         ]
 
         for label_text, row, col in fields:
             label = QLabel(label_text)
-            label.setStyleSheet("color: #20B2AA; font-size: 14px; font-weight: bold;")
-            form_layout.addWidget(label, row, col)
+            label.setFont(QFont(font_family, 11))
+            label.setStyleSheet("color: #23465A;")
+            grid.addWidget(label, row, col)
 
-            if label_text != "Gender:":
-                line_edit = QLineEdit()
-                line_edit.setStyleSheet("background-color: #D3D3D3; border: none; padding: 5px;")
-                form_layout.addWidget(line_edit, row, col + 1)
-            else:
-                gender_layout = QHBoxLayout()
-                male_radio = QRadioButton("Male")
+            if label_text == "Sex:":
+                sex_layout = QHBoxLayout()
+                sex_layout.setSpacing(10)
                 female_radio = QRadioButton("Female")
-                gender_layout.addWidget(male_radio)
-                gender_layout.addWidget(female_radio)
-                form_layout.addLayout(gender_layout, row, col + 1)
+                male_radio = QRadioButton("Male")
+                female_radio.setFont(QFont(font_family, 11))
+                male_radio.setFont(QFont(font_family, 11))
+                female_radio.setStyleSheet("color: black;")
+                male_radio.setStyleSheet("color: black;")
+                sex_layout.addWidget(female_radio)
+                sex_layout.addWidget(male_radio)
+                sex_layout.addStretch()
+                grid.addLayout(sex_layout, row, col + 1)
+            else:
+                input_field = QLineEdit()
+                input_field.setStyleSheet("""
+                    background-color: #F0F0F0;
+                    border: 1px solid #E0E0E0;
+                    border-radius: 20px;
+                    padding: 5px;
+                    padding-left: 15px;
+                    font-size: 14px;
+                    color: #555;
+                """)
+                input_field.setFixedSize(260, 40)
+                if "Password" in label_text:
+                    input_field.setEchoMode(QLineEdit.Password)
+                grid.addWidget(input_field, row, col + 1)
 
-        # User table
-        user_table = QTableWidget(1, 3)
-        user_table.setHorizontalHeaderLabels(["Name", "Password", "Email"])
-        user_table.setItem(0, 0, QTableWidgetItem("John Doe"))
-        user_table.setItem(0, 1, QTableWidgetItem("Password123"))
-        user_table.setItem(0, 2, QTableWidgetItem("johndoe@gmail.com"))
-        user_table.setStyleSheet("background-color: white; border: none;")
-        user_table.horizontalHeader().setStyleSheet("font-weight: bold;")
+        # Add buttons
+        button_layout = QVBoxLayout()
+        button_layout.setSpacing(15)
+        buttons = ["Submit", "Cancel"]
+        for button_text in buttons:
+            button = AnimatedButton(button_text)
+            button.setFixedSize(260, 40)
+            button.clicked.connect(self.button_clicked)
+            button_layout.addWidget(button)
 
-        # Buttons
-        add_user_button = self.create_button("Add User")
-        submit_button = self.create_button("Submit")
-        cancel_button = QPushButton("Cancel")
-        cancel_button.setStyleSheet("""
-            background-color: transparent;
-            color: #8FBC8F;
-            border: none;
-            font-size: 16px;
-        """)
+        grid.addItem(QSpacerItem(20, 20), 8, 0, 1, 4)
+        grid.addLayout(button_layout, 8, 0, 2, 4, Qt.AlignCenter)
+        grid.addItem(QSpacerItem(20, 20), 10, 0, 1, 4)
 
-        # Add widgets to container layout
-        container_layout.addWidget(title)
-        container_layout.addLayout(form_layout)
-        container_layout.addWidget(user_table)
-        container_layout.addWidget(add_user_button, alignment=Qt.AlignCenter)
-        container_layout.addWidget(submit_button, alignment=Qt.AlignCenter)
-        container_layout.addWidget(cancel_button, alignment=Qt.AlignCenter)
 
-        # Add container to main layout
-        main_layout.addWidget(container)
+        # Center the white background
+        main_layout.addWidget(self.container, alignment=Qt.AlignCenter)
 
-    def create_button(self, text):
-        button = QPushButton(text)
-        button.setStyleSheet("""
-            background-color: #8FBC8F;
-            color: white;
-            border-radius: 20px;
-            padding: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            width: 200px;
-        """)
-        button.clicked.connect(lambda: print(f"{text} clicked"))
-        return button
+        # Animate container on show
+        self.show_animation = QPropertyAnimation(self.container, b"pos")
+        self.show_animation.setDuration(1000)
+        self.show_animation.setStartValue(QPoint(190, -660))
+        self.show_animation.setEndValue(QPoint(190, 30))
+        self.show_animation.setEasingCurve(QEasingCurve.OutBack)
 
+        # Start animation after a short delay
+        QTimer.singleShot(100, self.show_animation.start)
+
+    def button_clicked(self):
+        sender = self.sender()
+        print(f"{sender.text()} button clicked")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = RegistrationForm()
-    window.show()
+    ex = RegistrationForm()
+    ex.show()
     sys.exit(app.exec_())
