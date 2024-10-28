@@ -107,3 +107,8 @@ class CustomPage(QWidget):
         # Switch to the video window
         self.parent.show_video_window()
 
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = CustomPage(None)
+    window.show()
+    sys.exit(app.exec_())

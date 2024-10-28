@@ -1,8 +1,10 @@
 import sys
+
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
                              QFrame, QSizePolicy, QGraphicsDropShadowEffect, QGridLayout)
 from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QLinearGradient
 from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QTimer
+
 
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
