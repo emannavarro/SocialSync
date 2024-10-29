@@ -23,7 +23,7 @@ class CustomButton(QPushButton):
         painter.drawText(self.rect(), Qt.AlignCenter, self.text())
 
 class ProfileSetup(QMainWindow):
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Profile Setup")
         self.setFixedSize(1280, 720)
