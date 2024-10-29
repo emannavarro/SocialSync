@@ -1,5 +1,4 @@
 import sys
-
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
                              QFrame, QSizePolicy, QGraphicsDropShadowEffect, QGridLayout)
 from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QLinearGradient
@@ -51,9 +50,9 @@ class AnimatedButton(QPushButton):
 
 
 class MainWindow(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.parent = parent  # Reference to the main window containing the show_history_page function
+    def __init__(self, main_window):
+        super().__init__()
+        self.main_window = main_window  # Reference to the main window with navigation methods
         self.initUI()
 
     def initUI(self):
@@ -102,9 +101,15 @@ class MainWindow(QWidget):
         for text in ["Profile", "History", "Sign Out"]:
             button = AnimatedButton(text, self)
             button.setFixedSize(120, 50)
-            if text == "History":
-                # Connect the "History" button to show_history_page in the parent MainWindow
-                button.clicked.connect(self.parent.show_history_page)
+            if text == "Profile":
+                # Connect to show_profile_page in the main window
+                button.clicked.connect(self.main_window.show_profile_setting_gui)
+            elif text == "History":
+                # Connect to show_history_page in the main window
+                button.clicked.connect(self.main_window.show_history_page)
+            elif text == "Sign Out":
+                # Connect to show_login_page in the main window
+                button.clicked.connect(self.main_window.show_login_page)
             header_inner_layout.addWidget(button, alignment=Qt.AlignRight | Qt.AlignVCenter)
 
         return header_container
@@ -135,7 +140,7 @@ class MainWindow(QWidget):
             }
         """)
         content_layout.addWidget(start_button, 1, 0, 1, 1, Qt.AlignCenter)
-        start_button.clicked.connect(lambda: self.parent.show_video_window())
+        start_button.clicked.connect(lambda: self.main_window.show_video_window())
 
         content_layout.setRowStretch(0, 1)
         content_layout.setRowStretch(1, 1)
@@ -180,6 +185,7 @@ class MainWindow(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main_window = MainWindow()  # Ensure this points to the top-level MainWindow with show_history_page
+    main_app_window = QWidget()  # Placeholder for the MainWindow with navigation methods
+    main_window = MainWindow(main_app_window)  # Pass the main window reference here
     main_window.show()
     sys.exit(app.exec_())

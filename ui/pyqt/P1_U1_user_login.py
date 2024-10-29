@@ -159,7 +159,7 @@ class LoginPage(QWidget):
 
     def login(self):
         # Placeholder for login functionality
-        self.parent.show_presesh_page()
+        self.parent.show_home_page()
 
 
     def register_page(self):
