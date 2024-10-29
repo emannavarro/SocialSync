@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
                              QFrame, QSizePolicy, QGraphicsDropShadowEffect, QGridLayout)
 from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QLinearGradient
-from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint
+from PyQt5.QtCore import Qt, QPropertyAnimation, QPoint
 
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
@@ -51,6 +51,7 @@ class MainWindow(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.initUI()
+        self.parent = parent
 
     def initUI(self):
         self.setWindowTitle('Care Profile Settings')
@@ -96,6 +97,7 @@ class MainWindow(QWidget):
 
         sign_out_button = AnimatedButton("Sign Out", self)
         sign_out_button.setFixedSize(120, 50)
+        sign_out_button.clicked.connect(self.sign_out)  # Connect to sign_out method
         header_inner_layout.addWidget(sign_out_button, alignment=Qt.AlignRight | Qt.AlignVCenter)
 
         return header_container
@@ -201,6 +203,7 @@ class MainWindow(QWidget):
 
         back_button = AnimatedButton('Back', self)
         back_button.setFixedSize(120, 50)
+        back_button.clicked.connect(self.go_back)  # Connect to go_back method
         back_button.setStyleSheet("""
             QPushButton {
                 background-color: white;
@@ -236,14 +239,20 @@ class MainWindow(QWidget):
         button.clicked.connect(lambda: print(f"{text} button clicked"))
         return button
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+    def go_back(self):
+        """Handles the 'Back' button functionality"""
+        self.parent.go_back()
 
-        gradient = QLinearGradient(0, 0, 0, self.height())
-        gradient.setColorAt(0, QColor("#71B89A"))
-        gradient.setColorAt(1, QColor("#5A9A7F"))
-        painter.fillRect(self.rect(), gradient)
+    def sign_out(self):
+        """Handles the 'Sign Out' button functionality"""
+        self.parent.show_login_page()
+
+class LoginWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Login Page")
+        self.setGeometry(100, 100, 800, 600)
+        self.setStyleSheet("background-color: #F0F0F0;")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

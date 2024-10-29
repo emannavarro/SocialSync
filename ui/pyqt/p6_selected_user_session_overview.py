@@ -86,9 +86,10 @@ class CircleTextButton(QWidget):
         print(f"{self.text} button clicked")
 
 class OverviewScreen(QWidget):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
         self.initUI()
+        self.parent = parent
 
     def initUI(self):
         self.setFixedSize(1280, 720)
@@ -126,10 +127,12 @@ class OverviewScreen(QWidget):
         # History button on the right
         history_button = self.create_button('History', 120, 50, bg_color="#71B89A", text_color="white")
         header_inner_layout.addWidget(history_button, alignment=Qt.AlignRight | Qt.AlignVCenter)
+        history_button.clicked.connect(self.go_to_history)
 
         # Profile button on the right (now green with white text)
         profile_button = self.create_button('Profile', 120, 50, bg_color="#71B89A", text_color="white")
         header_inner_layout.addWidget(profile_button, alignment=Qt.AlignRight | Qt.AlignVCenter)
+        profile_button.clicked.connect(self.go_to_profile_settings)
 
         header_layout.addWidget(header_container)
         main_layout.addLayout(header_layout)
@@ -230,6 +233,16 @@ class OverviewScreen(QWidget):
         help_layout.addWidget(help_button, 0, Qt.AlignLeft | Qt.AlignBottom)
         help_layout.setContentsMargins(20, 0, 0, 20)
         main_layout.addLayout(help_layout)
+
+    def go_to_history(self):
+        """Navigate to the History page (p10) in the main window."""
+        if self.parent:
+            self.parent.show_history_page()  # Call the parent's method to show History page
+
+    def go_to_profile_settings(self):
+        """Navigate to the Profile Settings page (p6) in the main window."""
+        if self.parent:
+            self.parent.show_care_profile_settings()  # Call the parent's method to show Profile Settings
 
     def create_button(self, text, width, height, bg_color, text_color):
         button = QPushButton(text, self)

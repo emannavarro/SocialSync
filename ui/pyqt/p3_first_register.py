@@ -181,7 +181,10 @@ class RegistrationForm(QWidget):
 
     def button_clicked(self):
         sender = self.sender()
-        print(f"{sender.text()} button clicked")
+        if sender.text() == "Add User" and self.main_window:
+            self.main_window.show_session_overview()  # Navigate to P5 page
+        else:
+            print(f"{sender.text()} button clicked")
 
 
 if __name__ == '__main__':
