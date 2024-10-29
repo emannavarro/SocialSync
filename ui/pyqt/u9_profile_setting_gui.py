@@ -29,6 +29,8 @@ class AnimatedButton(QPushButton):
         self.shadow.setOffset(0, 5)
         self.setGraphicsEffect(self.shadow)
 
+
+
     def enterEvent(self, event):
         self.animate_shadow(25, 0, 8)
 

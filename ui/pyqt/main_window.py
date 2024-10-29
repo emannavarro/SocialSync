@@ -15,6 +15,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
+        self.navigation_stack = []  # Track page history for Back navigation
+
         self.setWindowTitle("SocialSync")
         self.setGeometry(100, 100, 1200, 800)
 
@@ -28,6 +30,19 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.login_page)
         self.stacked_widget.setCurrentWidget(self.login_page)
 
+    def navigate_to(self, page):
+        """Navigate to the specified page and add the current page to history."""
+        current_page = self.stacked_widget.currentWidget()
+        if current_page != page:
+            self.navigation_stack.append(current_page)  # Save current page
+            self.stacked_widget.setCurrentWidget(page)
+
+    def go_back(self):
+        """Go back to the previous page in the navigation stack."""
+        if self.navigation_stack:
+            previous_page = self.navigation_stack.pop()  # Get last visited page
+            self.stacked_widget.setCurrentWidget(previous_page)
+
     @property
     def login_page(self):
         if not hasattr(self, '_login_page'):
@@ -36,49 +51,49 @@ class MainWindow(QMainWindow):
         return self._login_page
 
     @property
-    def P3_register_page(self):
+    def register_page(self):
         if not hasattr(self, '_register_page'):
             self._register_page = RegistrationForm(self)
             self.stacked_widget.addWidget(self._register_page)
         return self._register_page
 
     @property
-    def U4_presesh_page(self):
+    def presesh_page(self):
         if not hasattr(self, '_presesh_page'):
             self._presesh_page = U4_PreSession(self)
             self.stacked_widget.addWidget(self._presesh_page)
         return self._presesh_page
 
     @property
-    def U2_profile_page(self):
+    def profile_page(self):
         if not hasattr(self, '_profile_page'):
             self._profile_page = U2_ProfileSetup(self)
             self.stacked_widget.addWidget(self._profile_page)
         return self._profile_page
 
     @property
-    def P10_history_page(self):
+    def history_page(self):
         if not hasattr(self, '_history_page'):
             self._history_page = P10_HistoryPage(self)
             self.stacked_widget.addWidget(self._history_page)
         return self._history_page
 
     @property
-    def U7_video_window(self):
+    def video_window(self):
         if not hasattr(self, '_video_window'):
             self._video_window = U7_SessionDashboard(self)
             self.stacked_widget.addWidget(self._video_window)
         return self._video_window
 
     @property
-    def U_vocal_visual_setting_page(self):
+    def vocal_visual_setting_page(self):
         if not hasattr(self, '_vocal_visual_setting_page'):
             self._vocal_visual_setting_page = U_VocalVisualSetting(self)
             self.stacked_widget.addWidget(self._vocal_visual_setting_page)
         return self._vocal_visual_setting_page
 
     @property
-    def P6_care_profile_settings(self):
+    def care_profile_settings(self):
         if not hasattr(self, '_care_profile_settings'):
             self._care_profile_settings = P6_CareProfileSettings(self)
             self.stacked_widget.addWidget(self._care_profile_settings)
@@ -92,30 +107,30 @@ class MainWindow(QMainWindow):
             self.stacked_widget.addWidget(self._register_patient)
         return self._register_patient
 
-    # Show methods use properties, ensuring pages are only created when needed
+    # Show methods using navigate_to to add pages to the history stack
     def show_register_patient(self):
-        self.stacked_widget.setCurrentWidget(self.register_patient)
+        self.navigate_to(self.register_patient)
 
     def show_login_page(self):
-        self.stacked_widget.setCurrentWidget(self.login_page)
+        self.navigate_to(self.login_page)
 
     def show_register_page(self):
-        self.stacked_widget.setCurrentWidget(self.P3_register_page)
+        self.navigate_to(self.register_page)
 
     def show_presesh_page(self):
-        self.stacked_widget.setCurrentWidget(self.U4_presesh_page)
+        self.navigate_to(self.presesh_page)
 
     def show_profile_page(self):
-        self.stacked_widget.setCurrentWidget(self.U2_profile_page)
+        self.navigate_to(self.profile_page)
 
     def show_history_page(self):
-        self.stacked_widget.setCurrentWidget(self.P10_history_page)
+        self.navigate_to(self.history_page)
 
     def show_video_window(self):
-        self.stacked_widget.setCurrentWidget(self.U7_video_window)
+        self.navigate_to(self.video_window)
 
     def show_vocal_visual_setting_page(self):
-        self.stacked_widget.setCurrentWidget(self.U_vocal_visual_setting_page)
+        self.navigate_to(self.vocal_visual_setting_page)
 
     def show_care_profile_settings(self):
-        self.stacked_widget.setCurrentWidget(self.P6_care_profile_settings)
+        self.navigate_to(self.care_profile_settings)

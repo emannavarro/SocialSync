@@ -37,7 +37,7 @@ def preprocess(frame_p):
 
 
 def detect_face(frame_p):
-    cascade = cv2.CascadeClassifier("/Users/joshuamedina/PycharmProjects/SocialSync/backend/ml/haarcascade_frontalface_default.xml")
+    cascade = cv2.CascadeClassifier("/Users/alizargari/PycharmProjects/SocialSync/backend/ml/haarcascade_frontalface_default.xml")
     gray = cv2.cvtColor(frame_p, cv2.COLOR_BGR2GRAY)
     faces = cascade.detectMultiScale(gray, 1.1, 4)
 
