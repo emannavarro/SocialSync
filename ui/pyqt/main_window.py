@@ -1,7 +1,18 @@
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QStackedWidget
+
 from ui.pyqt.p1_guardian_login import GuardianLoginPage
-from ui.pyqt.u1_user_login import LoginPage
+from ui.pyqt.P1_U1_user_login import LoginPage
+
+from ui.pyqt.p3_first_register import RegistrationForm
+from ui.pyqt.u4_home import MainWindow as PreSession
+from ui.pyqt.u7_camera_working_session_dashboard import MainWindow as SessionDashboard
+from ui.pyqt.u2_profile_init import ProfileSetup
+from ui.pyqt.p10_session_history import HistoryPage
+from ui.pyqt.u_vocal_and_visual_setting import MainWindow as VocalVisualSetting
+
+from ui.pyqt.p6_care_profile_settings import MainWindow as CareProfileSettings
+from ui.pyqt.p5_session_overview import OverviewScreen as SessionOverview
 
 
 class MainWindow(QMainWindow):
@@ -17,7 +28,18 @@ class MainWindow(QMainWindow):
         self.setStyleSheet("background-color: #71B89A;")
         self.setFont(QFont("Josefin Sans", 12))
 
-        # Initialize only the login page and add it to the stack
+        # Add the login, register, and dashboard pages to the stack
+        self.GuardianLoginPage = GuardianLoginPage(self)
+        self.login_page = LoginPage(self)  # Pass MainWindow as reference
+        self.register_page = RegistrationForm(self)
+        self.presesh_page = PreSession(self)
+        self.profile_page = ProfileSetup(self)
+        self.history_page = HistoryPage(self)
+        self.video_window = SessionDashboard(self)
+        self.vocal_visual_setting_page = VocalVisualSetting(self)
+        self.care_profile_settings = CareProfileSettings(self)
+        # self.register_patient = RegisterPatient(self)
+
         self.stacked_widget.addWidget(self.login_page)
         self.stacked_widget.setCurrentWidget(self.login_page)
 
