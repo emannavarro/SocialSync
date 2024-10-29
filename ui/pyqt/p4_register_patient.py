@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt
 
 class RegisterPatient(QWidget):
     def __init__(self, parent=None):
-        super().__init__()
+        super().__init__(parent)
         self.initUI()
         self.parent = parent
 

@@ -48,8 +48,8 @@ class AnimatedButton(QPushButton):
         self.anim_offset.start()
 
 class MainWindow(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.initUI()
 
     def initUI(self):

@@ -1,7 +1,7 @@
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QStackedWidget
 
-from ui.pyqt.guardian_login import LoginPage
+from ui.pyqt.p1_guardian_login import GuardianLoginPage
 from ui.pyqt.P1_U1_user_login import LoginPage
 
 from ui.pyqt.p3_first_register import RegistrationForm
@@ -39,10 +39,10 @@ class MainWindow(QMainWindow):
         self.video_window = SessionDashboard(self)
         self.vocal_visual_setting_page = VocalVisualSetting(self)
         self.care_profile_settings = CareProfileSettings(self)
-        self.register_patient = RegisterPatient(self)
+        # self.register_patient = RegisterPatient(self)
 
 
-        self.stacked_widget.addWidget(self.register_patient)
+        # self.stacked_widget.addWidget(self.register_patient)
         self.stacked_widget.addWidget(self.login_page)
         self.stacked_widget.addWidget(self.GuardianLoginPage)
         self.stacked_widget.addWidget(self.register_page)
@@ -58,8 +58,8 @@ class MainWindow(QMainWindow):
 
         self.stacked_widget.setCurrentWidget(self.GuardianLoginPage)
 
-    def show_register_patient(self):
-        self.stacked_widget.setCurrentWidget(self.register_patient)
+    # def show_register_patient(self):
+    #     self.stacked_widget.setCurrentWidget(self.register_patient)
 
     def show_login_page(self):
         self.stacked_widget.setCurrentWidget(self.login_page)

@@ -49,8 +49,8 @@ class AnimatedButton(QPushButton):
         self.anim_offset.start()
 
 class HistoryPage(QMainWindow):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.setWindowTitle("History")
         self.setFixedSize(1280, 720)
         self.setStyleSheet("background-color: #71B89A;")
