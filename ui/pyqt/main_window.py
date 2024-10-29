@@ -1,19 +1,15 @@
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QMainWindow, QStackedWidget
 
-from ui.pyqt.p1_guardian_login import GuardianLoginPage
 from ui.pyqt.P1_U1_user_login import LoginPage
-
 from ui.pyqt.p3_first_register import RegistrationForm
-from ui.pyqt.u4_home import MainWindow as PreSession
-from ui.pyqt.u7_camera_working_session_dashboard import MainWindow as SessionDashboard
-from ui.pyqt.u2_profile_init import ProfileSetup
-from ui.pyqt.p10_session_history import HistoryPage
-from ui.pyqt.u_vocal_and_visual_setting import MainWindow as VocalVisualSetting
-
-from ui.pyqt.p6_care_profile_settings import MainWindow as CareProfileSettings
-from ui.pyqt.p5_session_overview import OverviewScreen as SessionOverview
-
+from ui.pyqt.u4_home import MainWindow as U4_PreSession
+from ui.pyqt.u7_camera_working_session_dashboard import MainWindow as U7_SessionDashboard
+from ui.pyqt.u2_profile_init import ProfileSetup as U2_ProfileSetup
+from ui.pyqt.p10_session_history import HistoryPage as P10_HistoryPage
+from ui.pyqt.u_vocal_and_visual_setting import MainWindow as U_VocalVisualSetting
+from ui.pyqt.p6_care_profile_settings import MainWindow as P6_CareProfileSettings
+from ui.pyqt.p5_session_overview import OverviewScreen as P5_SessionOverview
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -28,18 +24,7 @@ class MainWindow(QMainWindow):
         self.setStyleSheet("background-color: #71B89A;")
         self.setFont(QFont("Josefin Sans", 12))
 
-        # Add the login, register, and dashboard pages to the stack
-        self.GuardianLoginPage = GuardianLoginPage(self)
-        self.login_page = LoginPage(self)  # Pass MainWindow as reference
-        self.register_page = RegistrationForm(self)
-        self.presesh_page = PreSession(self)
-        self.profile_page = ProfileSetup(self)
-        self.history_page = HistoryPage(self)
-        self.video_window = SessionDashboard(self)
-        self.vocal_visual_setting_page = VocalVisualSetting(self)
-        self.care_profile_settings = CareProfileSettings(self)
-        # self.register_patient = RegisterPatient(self)
-
+        # Initialize and add the login page to the stack
         self.stacked_widget.addWidget(self.login_page)
         self.stacked_widget.setCurrentWidget(self.login_page)
 
@@ -47,68 +32,55 @@ class MainWindow(QMainWindow):
     def login_page(self):
         if not hasattr(self, '_login_page'):
             self._login_page = LoginPage(self)
+            self.stacked_widget.addWidget(self._login_page)
         return self._login_page
 
     @property
-    def guardian_login_page(self):
-        if not hasattr(self, '_guardian_login_page'):
-            self._guardian_login_page = GuardianLoginPage(self)
-            self.stacked_widget.addWidget(self._guardian_login_page)
-        return self._guardian_login_page
-
-    @property
-    def register_page(self):
+    def P3_register_page(self):
         if not hasattr(self, '_register_page'):
-            from ui.pyqt.p3_first_register import RegistrationForm
             self._register_page = RegistrationForm(self)
             self.stacked_widget.addWidget(self._register_page)
         return self._register_page
 
     @property
-    def presesh_page(self):
+    def U4_presesh_page(self):
         if not hasattr(self, '_presesh_page'):
-            from ui.pyqt.pre_session import CustomPage as PreSession
-            self._presesh_page = PreSession(self)
+            self._presesh_page = U4_PreSession(self)
             self.stacked_widget.addWidget(self._presesh_page)
         return self._presesh_page
 
     @property
-    def profile_page(self):
+    def U2_profile_page(self):
         if not hasattr(self, '_profile_page'):
-            from ui.pyqt.u2_profile_init import ProfileSetup
-            self._profile_page = ProfileSetup(self)
+            self._profile_page = U2_ProfileSetup(self)
             self.stacked_widget.addWidget(self._profile_page)
         return self._profile_page
 
     @property
-    def history_page(self):
+    def P10_history_page(self):
         if not hasattr(self, '_history_page'):
-            from ui.pyqt.p10_session_history import HistoryPage
-            self._history_page = HistoryPage(self)
+            self._history_page = P10_HistoryPage(self)
             self.stacked_widget.addWidget(self._history_page)
         return self._history_page
 
     @property
-    def video_window(self):
+    def U7_video_window(self):
         if not hasattr(self, '_video_window'):
-            from ui.pyqt.u7_camera_working_session_dashboard import MainWindow as SessionDashboard
-            self._video_window = SessionDashboard(self)
+            self._video_window = U7_SessionDashboard(self)
             self.stacked_widget.addWidget(self._video_window)
         return self._video_window
 
     @property
-    def vocal_visual_setting_page(self):
+    def U_vocal_visual_setting_page(self):
         if not hasattr(self, '_vocal_visual_setting_page'):
-            from ui.pyqt.u_vocal_and_visual_setting import MainWindow as VocalVisualSetting
-            self._vocal_visual_setting_page = VocalVisualSetting(self)
+            self._vocal_visual_setting_page = U_VocalVisualSetting(self)
             self.stacked_widget.addWidget(self._vocal_visual_setting_page)
         return self._vocal_visual_setting_page
 
     @property
-    def care_profile_settings(self):
+    def P6_care_profile_settings(self):
         if not hasattr(self, '_care_profile_settings'):
-            from ui.pyqt.p6_care_profile_settings import CareProfile as CareProfileSettings
-            self._care_profile_settings = CareProfileSettings(self)
+            self._care_profile_settings = P6_CareProfileSettings(self)
             self.stacked_widget.addWidget(self._care_profile_settings)
         return self._care_profile_settings
 
@@ -127,26 +99,23 @@ class MainWindow(QMainWindow):
     def show_login_page(self):
         self.stacked_widget.setCurrentWidget(self.login_page)
 
-    def show_guardian_login_page(self):
-        self.stacked_widget.setCurrentWidget(self.guardian_login_page)
-
     def show_register_page(self):
-        self.stacked_widget.setCurrentWidget(self.register_page)
+        self.stacked_widget.setCurrentWidget(self.P3_register_page)
 
     def show_presesh_page(self):
-        self.stacked_widget.setCurrentWidget(self.presesh_page)
+        self.stacked_widget.setCurrentWidget(self.U4_presesh_page)
 
     def show_profile_page(self):
-        self.stacked_widget.setCurrentWidget(self.profile_page)
+        self.stacked_widget.setCurrentWidget(self.U2_profile_page)
 
     def show_history_page(self):
-        self.stacked_widget.setCurrentWidget(self.history_page)
+        self.stacked_widget.setCurrentWidget(self.P10_history_page)
 
     def show_video_window(self):
-        self.stacked_widget.setCurrentWidget(self.video_window)
+        self.stacked_widget.setCurrentWidget(self.U7_video_window)
 
     def show_vocal_visual_setting_page(self):
-        self.stacked_widget.setCurrentWidget(self.vocal_visual_setting_page)
+        self.stacked_widget.setCurrentWidget(self.U_vocal_visual_setting_page)
 
     def show_care_profile_settings(self):
-        self.stacked_widget.setCurrentWidget(self.care_profile_settings)
+        self.stacked_widget.setCurrentWidget(self.P6_care_profile_settings)

@@ -50,6 +50,7 @@ class LoginPage(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.initUI()
+        self.parent = parent
 
     def initUI(self):
         self.setWindowTitle('SocialSync')
@@ -99,11 +100,13 @@ class LoginPage(QWidget):
         # Sign In button
         self.sign_in_button = AnimatedButton("Sign In", self.container)
         self.sign_in_button.setFixedSize(300, 50)
+        self.sign_in_button.clicked.connect(self.login)
         layout.addWidget(self.sign_in_button, alignment=Qt.AlignCenter)
 
         # New User button
         self.new_user_button = AnimatedButton("New User?", self.container)
         self.new_user_button.setFixedSize(300, 50)
+        self.new_user_button.clicked.connect(self.register_page)
         layout.addWidget(self.new_user_button, alignment=Qt.AlignCenter)
 
         # Forgot Password button
@@ -153,6 +156,17 @@ class LoginPage(QWidget):
         gradient.setColorAt(0, QColor("#71B89A"))
         gradient.setColorAt(1, QColor("#5A9A7F"))
         painter.fillRect(self.rect(), gradient)
+
+    def login(self):
+        # Placeholder for login functionality
+        self.parent.show_presesh_page()
+
+
+    def register_page(self):
+        # Placeholder for register page functionality
+        if self.parent :
+            self.parent.show_register_page()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
