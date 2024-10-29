@@ -2,7 +2,8 @@ import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QPushButton, QLabel, QFrame, QSizePolicy, QGraphicsDropShadowEffect)
 from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QLinearGradient
-from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint
+from PyQt5.QtCore import Qt, QPropertyAnimation, QPoint
+
 
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
@@ -47,6 +48,7 @@ class AnimatedButton(QPushButton):
         self.anim_blur.start()
         self.anim_offset.start()
 
+
 class RoundedFrame(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -60,9 +62,11 @@ class RoundedFrame(QFrame):
         shadow.setOffset(0, 10)
         self.setGraphicsEffect(shadow)
 
+
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, parent=None):
         super().__init__()
+        self.parent = parent  # Store reference to parent for navigation
         self.initUI()
 
     def initUI(self):
@@ -99,7 +103,7 @@ class MainWindow(QMainWindow):
         logo_label = QLabel(self)
         pixmap = QPixmap('images/v20_308.png')
         scaled_pixmap = pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        logo_label.setPixmap(scaled_pixmap)
+        logo_label.setPixmap(pixmap)
         header_inner_layout.addWidget(logo_label, alignment=Qt.AlignLeft | Qt.AlignVCenter)
 
         header_title = QLabel('Profile Settings', self)
@@ -111,9 +115,18 @@ class MainWindow(QMainWindow):
 
         sign_out_btn = AnimatedButton("Sign Out", self)
         sign_out_btn.setFixedSize(120, 50)
+        sign_out_btn.clicked.connect(self.sign_out)  # Connect to the sign_out method
+
+
         header_inner_layout.addWidget(sign_out_btn, alignment=Qt.AlignRight | Qt.AlignVCenter)
 
         return header_container
+
+    def sign_out(self):
+        """Navigate to the login page if parent is available."""
+        if self.parent:
+            self.parent.show_login_page()  # Call the parent's show_login_page method
+
 
     def createMainContent(self):
         content = QWidget()
@@ -210,6 +223,7 @@ class MainWindow(QMainWindow):
                 background-color: #E0E0E0;
             }
         """)
+        back_button.clicked.connect(self.go_back)  # Connect to go_back method
         layout.addWidget(back_button, alignment=Qt.AlignRight)
 
         return section
@@ -243,8 +257,15 @@ class MainWindow(QMainWindow):
         gradient.setColorAt(1, QColor("#5A9A7F"))
         painter.fillRect(self.rect(), gradient)
 
+    def go_back(self):
+        """Navigate to the previous page if parent is available."""
+        if self.parent:
+            self.parent.go_back()  # Call the parent's go_back method
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = MainWindow()
+    main_window = QWidget()  # Assuming there's a parent widget handling navigation
+    window = MainWindow(parent=main_window)
     window.show()
     sys.exit(app.exec_())

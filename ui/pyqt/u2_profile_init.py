@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QLabel, QFrame, QSpacerItem, QSizePolicy, QFileDialog, QPushButton)
 from PyQt5.QtGui import QFont, QIcon, QPainter, QColor, QPixmap
 from PyQt5.QtCore import Qt, QSize
-import os
 
 class CustomButton(QPushButton):
     def __init__(self, text, parent):
@@ -25,10 +24,10 @@ class CustomButton(QPushButton):
 class ProfileSetup(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.parent = parent  # Keep parent for navigation
         self.setWindowTitle("Profile Setup")
         self.setFixedSize(1280, 720)
         self.setStyleSheet("background-color: #71B89A;")
-        self.parent = parent
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -60,7 +59,7 @@ class ProfileSetup(QMainWindow):
             background-color: #D3D3D3;
             border-radius: 60px;
             qproperty-iconSize: 60px 60px;
-""")
+        """)
         self.upload_photo_button.setCursor(Qt.PointingHandCursor)
         self.upload_photo_button.clicked.connect(self.upload_photo_clicked)
 
@@ -107,8 +106,8 @@ class ProfileSetup(QMainWindow):
             font-size: 18px;
             font-weight: bold;
             border-radius: 25px;
-""")
-        skip_button.clicked.connect(self.skip_clicked)
+        """)
+        skip_button.clicked.connect(self.next_clicked)  # Connect both Skip and Next to the same function
 
         container_layout.addWidget(title)
         container_layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
@@ -144,16 +143,17 @@ class ProfileSetup(QMainWindow):
         self.upload_photo_button.setIconSize(QSize(120, 120))
 
     def vocal_visual_clicked(self):
-        print("Vocal and Visual Settings clicked")
+        if self.parent:
+            self.parent.show_vocal_visual_setting_page()  # Navigate to Vocal and Visual Settings page
 
     def next_clicked(self):
-        print("Next clicked")
+        if self.parent:
+            self.parent.show_home_page()  # Navigate to U4 page for both Next and Skip
 
-    def skip_clicked(self):
-        print("Skip clicked")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = ProfileSetup()
+    main_window = QMainWindow()  # Placeholder for main application window with necessary methods
+    window = ProfileSetup(main_window)
     window.show()
     sys.exit(app.exec_())

@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QPushButton, QLabel, QFrame, QHBoxLayout, QScrollArea,
                              QSizePolicy, QGraphicsDropShadowEffect, QGridLayout)
 from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QLinearGradient
-from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve, QPoint, QTimer
+from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QPoint
 
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
@@ -49,8 +49,9 @@ class AnimatedButton(QPushButton):
         self.anim_offset.start()
 
 class HistoryPage(QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, main_window=None):
+        super().__init__(main_window)
+        self.main_window = main_window  # Store reference to the main window for navigation
         self.setWindowTitle("History")
         self.setFixedSize(1280, 720)
         self.setStyleSheet("background-color: #71B89A;")
@@ -96,6 +97,7 @@ class HistoryPage(QMainWindow):
 
         sign_out_button = AnimatedButton("Sign Out")
         sign_out_button.setFixedSize(120, 50)
+        sign_out_button.clicked.connect(self.sign_out)  # Connect to sign out function
         header_layout.addWidget(sign_out_button, alignment=Qt.AlignRight | Qt.AlignVCenter)
 
         return header_container
@@ -180,6 +182,7 @@ class HistoryPage(QMainWindow):
 
         back_button = AnimatedButton('Back')
         back_button.setFixedSize(120, 50)
+        back_button.clicked.connect(self.go_back)  # Connect to go back function
         layout.addWidget(back_button, alignment=Qt.AlignRight | Qt.AlignBottom)
 
         return section
@@ -193,8 +196,19 @@ class HistoryPage(QMainWindow):
         gradient.setColorAt(1, QColor("#5A9A7F"))
         painter.fillRect(self.rect(), gradient)
 
+    def sign_out(self):
+        """Navigate to the login page."""
+        if self.main_window:
+            self.main_window.show_login_page()
+
+    def go_back(self):
+        """Navigate to the previous page."""
+        if self.main_window:
+            self.main_window.go_back()
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = HistoryPage()
-    window.show()
+    main_app_window = QWidget()  # Placeholder for the main window with navigation methods
+    history_page = HistoryPage(main_app_window)  # Pass the main window reference here
+    history_page.show()
     sys.exit(app.exec_())

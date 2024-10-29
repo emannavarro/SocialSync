@@ -129,7 +129,7 @@ class MainWindow(QWidget):
     def handle_button_click(self, btn_name):
         """ Handle button clicks for Profile, History, and Sign Out """
         if btn_name == "Profile":
-            self.main_window.show_care_profile_settings()
+            self.main_window.show_profile_setting_gui()
         elif btn_name == "History":
             self.main_window.show_history_page()
         elif btn_name == "Sign Out":

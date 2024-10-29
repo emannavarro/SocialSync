@@ -94,9 +94,10 @@ class CustomAddUserButton(AnimatedButton):
 
 
 class OverviewScreen(QWidget):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
         self.initUI()
+        self.parent = parent
 
     def initUI(self):
         self.setWindowTitle('Session Overview')
@@ -142,6 +143,8 @@ class OverviewScreen(QWidget):
 
         profile_button = AnimatedButton("Profile", self)
         profile_button.setFixedSize(120, 50)
+        profile_button.clicked.connect(self.go_to_care_profile_settings)
+
         header_inner_layout.addWidget(profile_button, alignment=Qt.AlignRight | Qt.AlignVCenter)
 
         return header_container
@@ -182,6 +185,8 @@ class OverviewScreen(QWidget):
                 background-color: #E0E0E0;
             }
         """)
+        name_button.clicked.connect(self.go_to_session_overview)
+
         content_layout.addWidget(name_button, alignment=Qt.AlignCenter)
 
         content_layout.addSpacing(20)
@@ -190,6 +195,23 @@ class OverviewScreen(QWidget):
         content_layout.addWidget(add_user_button, alignment=Qt.AlignCenter)
 
         return content
+
+    def go_to_care_profile_settings(self):
+        """Navigate to the Care Profile Settings page (p6) in the main window."""
+        if self.parent:
+            self.parent.show_care_profile_settings()  # Call the parent's navigation method
+
+    def go_to_add_user(self):
+        """Navigate to the Add User page (p7) in the main window."""
+        pass
+
+    def go_to_session_overview(self):
+        """Navigate to the Session Overview page (p5) in the main window."""
+        if self.parent:
+            self.parent.show_selected_user_session_overview()
+
+
+
 
     def createBottomSection(self):
         section = QFrame()

@@ -4,7 +4,8 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QRadioBut
                              QGraphicsDropShadowEffect, QTableWidget, QTableWidgetItem,
                              QHeaderView)
 from PyQt5.QtGui import QFont, QColor
-from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint
+from PyQt5.QtCore import Qt
+
 
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
@@ -28,9 +29,11 @@ class AnimatedButton(QPushButton):
         self.shadow.setOffset(0, 5)
         self.setGraphicsEffect(self.shadow)
 
+
 class RegistrationForm(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, main_window):
+        super().__init__()
+        self.main_window = main_window  # Store reference to the main window
         self.initUI()
 
     def initUI(self):
@@ -45,7 +48,7 @@ class RegistrationForm(QWidget):
             background-color: white;
             border-radius: 40px;
         """)
-        container.setFixedSize(1120, 680) # Slightly increase width and height
+        container.setFixedSize(1120, 680)
         shadow = QGraphicsDropShadowEffect(self)
         shadow.setBlurRadius(30)
         shadow.setColor(QColor(0, 0, 0, 60))
@@ -64,14 +67,9 @@ class RegistrationForm(QWidget):
 
         form_layout = QGridLayout()
         form_layout.setVerticalSpacing(15)
-        form_layout.setHorizontalSpacing(10) # Reduced horizontal spacing
-        form_layout.setColumnStretch(0, 0)  # Label column
-        form_layout.setColumnStretch(1, 1)  # Input field column
-        form_layout.setColumnStretch(2, 0)  # Spacing column
-        form_layout.setColumnStretch(3, 0)  # Label column
-        form_layout.setColumnStretch(4, 1)  # Input field column
+        form_layout.setHorizontalSpacing(10)
 
-
+        # Form fields setup
         fields = [
             ("First Name:", 0, 0, 1), ("Address:", 0, 3, 4),
             ("Middle Name:", 1, 0, 1), ("City:", 1, 3, 4),
@@ -112,7 +110,7 @@ class RegistrationForm(QWidget):
 
         container_layout.addLayout(form_layout)
 
-        # User table
+        # User table setup
         user_table = QTableWidget()
         user_table.setColumnCount(3)
         user_table.setHorizontalHeaderLabels(["Name", "Password", "Email"])
@@ -141,8 +139,6 @@ class RegistrationForm(QWidget):
             ("John Doe", "Password123", "johndoe@gmail.com"),
             ("Jane Smith", "SecurePass456", "janesmith@gmail.com"),
             ("Bob Johnson", "BobPass789", "bob.johnson@gmail.com"),
-            ("Alice Brown", "AliceSecure321", "alice.brown@gmail.com"),
-            ("Charlie Davis", "CharliePass654", "charlie.davis@gmail.com"),
         ]
 
         for row, (name, password, email) in enumerate(sample_data):
@@ -163,19 +159,37 @@ class RegistrationForm(QWidget):
 
         for btn in [add_user_btn, cancel_btn, submit_btn]:
             btn.setFixedSize(200, 50)
-            btn.clicked.connect(self.button_clicked)
+            if btn == submit_btn:
+                btn.clicked.connect(self.submit_form)
+            elif btn == cancel_btn:
+                btn.clicked.connect(self.cancel_form)
+            else:
+                btn.clicked.connect(self.button_clicked)
             button_layout.addWidget(btn)
 
         container_layout.addLayout(button_layout)
-
         main_layout.addWidget(container, alignment=Qt.AlignCenter)
+
+    def submit_form(self):
+        """Submit the form and navigate to the profile page in the main window."""
+        self.main_window.show_profile_page()
+
+    def cancel_form(self):
+        """Cancel the form and navigate back to the login page in the main window."""
+        if self.main_window:
+            self.main_window.show_login_page()
 
     def button_clicked(self):
         sender = self.sender()
-        print(f"{sender.text()} button clicked")
+        if sender.text() == "Add User" and self.main_window:
+            self.main_window.show_session_overview()  # Navigate to P5 page
+        else:
+            print(f"{sender.text()} button clicked")
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = RegistrationForm()
-    ex.show()
+    main_window = QWidget()  # Placeholder for the actual MainWindow instance with show_profile_page
+    registration_form = RegistrationForm(main_window)
+    registration_form.show()
     sys.exit(app.exec_())
