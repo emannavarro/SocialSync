@@ -1,64 +1,121 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
-                             QPushButton, QLabel, QFrame, QHBoxLayout, QScrollArea)
-from PyQt5.QtGui import QFont, QPixmap
-from PyQt5.QtCore import Qt, QSize
+                             QPushButton, QLabel, QFrame, QHBoxLayout, QScrollArea,
+                             QSizePolicy, QGraphicsDropShadowEffect, QGridLayout)
+from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QLinearGradient
+from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QPoint
 
+class AnimatedButton(QPushButton):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.setStyleSheet("""
+            QPushButton {
+                background-color: #71B89A;
+                color: white;
+                border-radius: 25px;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 10px;
+            }
+            QPushButton:hover {
+                background-color: #5A9A7F;
+            }
+            QPushButton:pressed {
+                background-color: #4A8A6F;
+            }
+        """)
+        self.shadow = QGraphicsDropShadowEffect(self)
+        self.shadow.setBlurRadius(15)
+        self.shadow.setColor(QColor(0, 0, 0, 80))
+        self.shadow.setOffset(0, 5)
+        self.setGraphicsEffect(self.shadow)
+
+    def enterEvent(self, event):
+        self.animate_shadow(25, 0, 8)
+
+    def leaveEvent(self, event):
+        self.animate_shadow(15, 0, 5)
+
+    def animate_shadow(self, end_blur, end_x, end_y):
+        self.anim_blur = QPropertyAnimation(self.shadow, b"blurRadius")
+        self.anim_blur.setEndValue(end_blur)
+        self.anim_blur.setDuration(200)
+
+        self.anim_offset = QPropertyAnimation(self.shadow, b"offset")
+        self.anim_offset.setEndValue(QPoint(end_x, end_y))
+        self.anim_offset.setDuration(200)
+
+        self.anim_blur.start()
+        self.anim_offset.start()
 
 class HistoryPage(QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__()
+    def __init__(self, main_window=None):
+        super().__init__(main_window)
+        self.main_window = main_window  # Store reference to the main window for navigation
         self.setWindowTitle("History")
         self.setFixedSize(1280, 720)
-        self.setStyleSheet("background-color: #8FBC8F;")  # Sea Green color
-        self.parent = parent
+        self.setStyleSheet("background-color: #71B89A;")
 
-        # Main widget and layout
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Header
-        header = QWidget()
-        header.setStyleSheet("background-color: white;")
-        header.setFixedHeight(80)
-        header_layout = QHBoxLayout(header)
+        main_layout.addWidget(self.createHeader())
+        main_layout.addWidget(self.createMainContent())
+        main_layout.addWidget(self.createBottomSection())
+
+    def createHeader(self):
+        header_container = QWidget()
+        header_container.setStyleSheet("background-color: white;")
+        header_container.setFixedHeight(80)
+        header_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(15)
+        shadow.setColor(QColor(0, 0, 0, 50))
+        shadow.setOffset(0, 2)
+        header_container.setGraphicsEffect(shadow)
+
+        header_layout = QHBoxLayout(header_container)
         header_layout.setContentsMargins(20, 0, 20, 0)
+        header_layout.setSpacing(20)
 
-        # Logo
-        pixmap = QPixmap("A:\\OneDrive\\Documents\\Ali's Documents\\SE_\\CMPE 195B Senior Project II\\SocialSync\\ui\\PyQt\\images\\v20_308.png")
-        scaled_pixmap = pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         logo_label = QLabel()
+        pixmap = QPixmap("images/v20_308.png")
+        scaled_pixmap = pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         logo_label.setPixmap(scaled_pixmap)
-        logo_label.setFixedSize(60, 60)
+        header_layout.addWidget(logo_label, alignment=Qt.AlignLeft | Qt.AlignVCenter)
 
-        title_label = QLabel("Care Profile")
-        title_label.setStyleSheet("font-size: 36px; font-weight: bold;")
+        title_label = QLabel("History")
+        title_label.setFont(QFont('Arial', 28, QFont.Bold))
+        title_label.setStyleSheet("color: #71B89A;")
+        header_layout.addWidget(title_label, alignment=Qt.AlignLeft | Qt.AlignVCenter)
 
-        sign_out_button = self.create_button("Sign Out", "#8FBC8F", text_color="white")
-        sign_out_button.setFixedSize(120, 40)
+        header_layout.addStretch()
 
-        header_layout.addWidget(logo_label)
-        header_layout.addWidget(title_label)
-        header_layout.addStretch(1)
-        header_layout.addWidget(sign_out_button)
+        sign_out_button = AnimatedButton("Sign Out")
+        sign_out_button.setFixedSize(120, 50)
+        sign_out_button.clicked.connect(self.sign_out)  # Connect to sign out function
+        header_layout.addWidget(sign_out_button, alignment=Qt.AlignRight | Qt.AlignVCenter)
 
-        # Content area
+        return header_container
+
+    def createMainContent(self):
         content = QScrollArea()
         content.setWidgetResizable(True)
         content.setStyleSheet("background-color: transparent; border: none;")
         content_widget = QWidget()
         content_layout = QVBoxLayout(content_widget)
-        content_layout.setContentsMargins(40, 40, 40, 40)
+        content_layout.setContentsMargins(50, 50, 50, 50)
         content_layout.setSpacing(20)
 
         sessions_label = QLabel("Sessions:")
-        sessions_label.setStyleSheet("color: white; font-size: 32px; font-weight: bold;")
+        sessions_label.setFont(QFont('Arial', 32, QFont.Bold))
+        sessions_label.setStyleSheet("color: white;")
         content_layout.addWidget(sessions_label)
 
-        # Sample session data
         sessions = [
             {"name": "John Doe", "date": "02-20-2024", "time_elapsed": "2hrs 30mins"},
             {"name": "John Doe", "date": "03-25-2024", "time_elapsed": "30mins"},
@@ -74,41 +131,7 @@ class HistoryPage(QMainWindow):
         content_layout.addStretch(1)
         content.setWidget(content_widget)
 
-        # Bottom buttons
-        bottom_buttons = QWidget()
-        bottom_layout = QHBoxLayout(bottom_buttons)
-        bottom_layout.setContentsMargins(40, 0, 40, 40)
-
-        help_button = self.create_button("Help", "white", text_color="#8FBC8F")
-        back_button = self.create_button("Back", "#4682B4", text_color="white")
-
-        bottom_layout.addWidget(help_button)
-        bottom_layout.addStretch(1)
-        bottom_layout.addWidget(back_button)
-
-        # Add all widgets to the main layout
-        main_layout.addWidget(header)
-        main_layout.addWidget(content)
-        main_layout.addWidget(bottom_buttons)
-
-    def create_button(self, text, bg_color, text_color="black"):
-        button = QPushButton(text)
-        button.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {bg_color};
-                color: {text_color};
-                border-radius: 20px;
-                padding: 10px;
-                font-size: 18px;
-                font-weight: bold;
-            }}
-            QPushButton:hover {{
-                background-color: #A9A9A9;
-            }}
-        """)
-        button.setFixedSize(120, 40)
-        button.clicked.connect(lambda: print(f"{text} button clicked"))
-        return button
+        return content
 
     def create_session_widget(self, session):
         widget = QFrame()
@@ -133,9 +156,59 @@ class HistoryPage(QMainWindow):
 
         return widget
 
+    def createBottomSection(self):
+        section = QFrame()
+        layout = QHBoxLayout(section)
+        layout.setContentsMargins(50, 0, 50, 20)
+        layout.setSpacing(10)
+
+        help_button = AnimatedButton('Help')
+        help_button.setFixedSize(120, 50)
+        help_button.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: #39687C;
+                border-radius: 25px;
+                font-size: 18px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #E0E0E0;
+            }
+        """)
+        layout.addWidget(help_button, alignment=Qt.AlignLeft | Qt.AlignBottom)
+
+        layout.addStretch()
+
+        back_button = AnimatedButton('Back')
+        back_button.setFixedSize(120, 50)
+        back_button.clicked.connect(self.go_back)  # Connect to go back function
+        layout.addWidget(back_button, alignment=Qt.AlignRight | Qt.AlignBottom)
+
+        return section
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        gradient = QLinearGradient(0, 0, 0, self.height())
+        gradient.setColorAt(0, QColor("#71B89A"))
+        gradient.setColorAt(1, QColor("#5A9A7F"))
+        painter.fillRect(self.rect(), gradient)
+
+    def sign_out(self):
+        """Navigate to the login page."""
+        if self.main_window:
+            self.main_window.show_login_page()
+
+    def go_back(self):
+        """Navigate to the previous page."""
+        if self.main_window:
+            self.main_window.go_back()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = HistoryPage()
-    window.show()
+    main_app_window = QWidget()  # Placeholder for the main window with navigation methods
+    history_page = HistoryPage(main_app_window)  # Pass the main window reference here
+    history_page.show()
     sys.exit(app.exec_())
