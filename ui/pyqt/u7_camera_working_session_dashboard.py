@@ -1,5 +1,8 @@
 import sys
+from collections import deque
+
 import cv2
+import numpy as np
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
                              QFrame, QSizePolicy, QGraphicsDropShadowEffect, QProgressBar)
 from PyQt5.QtGui import QFont, QPixmap, QImage, QColor, QPainter, QLinearGradient
@@ -75,6 +78,9 @@ class MainWindow(QWidget):
         # Initialize video feed from VideoWindow
         self.video_window = VideoWindow()  # Create an instance of VideoWindow for video handling
         self.video_window.timer.timeout.connect(self.update_video_feed)  # Use the timer from VideoWindow
+
+        # Initialize a deque to store the last 100 emotion detections
+        self.emotion_history = deque(maxlen=100)
 
     def initUI(self):
         self.setWindowTitle('Emotion Recognition UI')
@@ -161,23 +167,24 @@ class MainWindow(QWidget):
         header.setAlignment(Qt.AlignCenter)
         layout.addWidget(header)
 
-        emotions = [
-            ("Annoyed", 90, QColor(255, 193, 7)),
-            ("Happiness", 3, QColor(46, 204, 113)),
-            ("Sad", 2, QColor(52, 152, 219)),
-            ("Upset", 1, QColor(231, 76, 60))
-        ]
+        # Initialize the emotions data structure to update later
+        self.emotions_data = {
+            "Annoyed": (QColor(255, 193, 7), QLabel(feedback), QProgressBar(feedback)),
+            "Happiness": (QColor(46, 204, 113), QLabel(feedback), QProgressBar(feedback)),
+            "Sad": (QColor(52, 152, 219), QLabel(feedback), QProgressBar(feedback)),
+            "Upset": (QColor(231, 76, 60), QLabel(feedback), QProgressBar(feedback))
+        }
 
-        for emotion, percentage, color in emotions:
+        for emotion, (color, label, progress_bar) in self.emotions_data.items():
             emotion_layout = QHBoxLayout()
-            emotion_label = QLabel(emotion, feedback)
-            emotion_label.setStyleSheet("color: white; font-size: 18px;")
-            percentage_label = QLabel(f"{percentage}%", feedback)
+            label.setText(emotion)
+            label.setStyleSheet("color: white; font-size: 18px;")
+
+            percentage_label = QLabel("0%", feedback)
             percentage_label.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
 
-            progress_bar = QProgressBar(feedback)
             progress_bar.setRange(0, 100)
-            progress_bar.setValue(percentage)
+            progress_bar.setValue(0)
             progress_bar.setTextVisible(False)
             progress_bar.setFixedHeight(10)
             progress_bar.setStyleSheet(f"""
@@ -191,7 +198,7 @@ class MainWindow(QWidget):
                 }}
             """)
 
-            emotion_layout.addWidget(emotion_label)
+            emotion_layout.addWidget(label)
             emotion_layout.addWidget(progress_bar)
             emotion_layout.addWidget(percentage_label)
 
@@ -207,19 +214,33 @@ class MainWindow(QWidget):
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(10)
 
-        confidence_label = QLabel("Confidence: 78%", section)
-        confidence_label.setStyleSheet("font-size: 22px; color: white; font-weight: bold;")
-        confidence_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(confidence_label)
+        # Initialize a QLabel for confidence display to update later
+        self.confidence_label = QLabel("Confidence: 0%", section)
+        self.confidence_label.setStyleSheet("font-size: 22px; color: white; font-weight: bold;")
+        self.confidence_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.confidence_label)
 
-        annoyed_face_label = QLabel(section)
+        self.annoyed_face_label = QLabel(section)
         annoyed_face_pixmap = QPixmap("images/v25_545.png").scaled(180, 180, Qt.KeepAspectRatio,
                                                                    Qt.SmoothTransformation)
-        annoyed_face_label.setPixmap(annoyed_face_pixmap)
-        annoyed_face_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(annoyed_face_label)
+        self.annoyed_face_label.setPixmap(annoyed_face_pixmap)
+        self.annoyed_face_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.annoyed_face_label)
 
         return section
+
+    # Update emotional feedback and confidence dynamically based on video feed data
+    def update_feedback(self, emotions, confidence):
+        # Update each emotion's progress bar and label
+        for emotion, (color, label, progress_bar) in self.emotions_data.items():
+            if emotion in emotions:
+                percentage = emotions[emotion]
+                progress_bar.setValue(percentage)
+                percentage_label = progress_bar.parent().findChildren(QLabel)[-1]  # Locate percentage label in layout
+                percentage_label.setText(f"{percentage}%")
+
+        # Update the confidence label
+        self.confidence_label.setText(f"Confidence: {int(confidence * 100)}%")
 
     def createVideoFeedSection(self):
         section = RoundedFrame()
@@ -299,16 +320,18 @@ Being annoyed is when you feel irritated or slightly angry because something is 
         if ret:
             gray, faces = detect_face(frame)
 
+            # Process each detected face
             for (x, y, w, h) in faces:
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
                 face_roi_gray = gray[y:y + h, x:x + w]
                 face_roi_gray = preprocess(face_roi_gray)
                 idx, conf = detect_emotion(face_roi_gray)
 
-                class_name = self.video_window.class_names[idx]
+                # Append current emotion data to history
+                self.emotion_history.append((idx, conf))
 
-                if conf > 0.3:
-                    cv2.putText(frame, class_name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                # Calculate the average emotion percentages over the last 100 frames
+                self.update_emotional_feedback()
 
             # Convert the frame to QImage for PyQt display
             rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -317,6 +340,71 @@ Being annoyed is when you feel irritated or slightly angry because something is 
             qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
             self.video_label.setPixmap(
                 QPixmap.fromImage(qt_image).scaled(288, 208, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
+    def update_emotional_feedback(self):
+        # Assuming `self.video_window.class_names` gives the list of emotions
+        emotion_counts = np.zeros(len(self.video_window.class_names))
+        total_conf = 0
+
+        # Sum the detected emotions and confidence levels from history
+        for idx, conf in self.emotion_history:
+            emotion_counts[idx] += conf
+            total_conf += conf
+
+        # Debug: Print emotion_counts and total_conf to ensure correct values
+        print("Emotion Counts:", emotion_counts)
+        print("Total Confidence:", total_conf)
+
+        # Calculate the percentages based on total confidence
+        if total_conf > 0:
+            emotion_percentages = (emotion_counts / total_conf) * 100
+        else:
+            emotion_percentages = np.zeros(len(self.video_window.class_names))  # Set all to zero if no confidence
+
+        # Debug: Print emotion_percentages to verify the calculation
+        print("Emotion Percentages:", emotion_percentages)
+
+        # Update the emotional feedback UI elements based on calculated percentages
+        for i, (emotion, (color, label, progress_bar)) in enumerate(self.emotions_data.items()):
+            # Get the current percentage for this emotion
+            percentage = int(emotion_percentages[i])
+
+            # Debug: Print each emotion and its percentage for verification
+            print(f"{emotion}: {percentage}%")
+
+            # Set the progress bar and label to reflect the percentage
+            progress_bar.setValue(percentage)
+            percentage_label = progress_bar.parent().findChildren(QLabel)[-1]  # Locate percentage label in layout
+            percentage_label.setText(f"{percentage}%")
+
+            # Explicitly reset the style if percentage is zero to ensure the bar appears empty
+            if percentage == 0:
+                progress_bar.setStyleSheet(f"""
+                    QProgressBar {{
+                        background-color: rgba(255, 255, 255, 0.3);
+                        border-radius: 5px;
+                    }}
+                    QProgressBar::chunk {{
+                        background-color: rgba(0, 0, 0, 0);  # Transparent when 0%
+                        border-radius: 5px;
+                    }}
+                """)
+            else:
+                progress_bar.setStyleSheet(f"""
+                    QProgressBar {{
+                        background-color: rgba(255, 255, 255, 0.3);
+                        border-radius: 5px;
+                    }}
+                    QProgressBar::chunk {{
+                        background-color: {color.name()};
+                        border-radius: 5px;
+                    }}
+                """)
+
+        # Update confidence with the average confidence across recent frames
+        avg_confidence = total_conf / len(self.emotion_history) if self.emotion_history else 0
+        self.confidence_label.setText(f"Confidence: {int(avg_confidence * 100)}%")
+
 
     def closeEvent(self, event):
         """ Ensure video resources are released when closing the window. """
