@@ -21,7 +21,7 @@ CREATE TABLE Users (
     Street_Address VARCHAR(255) NOT NULL,
     City VARCHAR(255) NOT NULL,
     State VARCHAR(255) NOT NULL,
-    Zip_Code VARCHAR(10) NOT NULL
+    Zip_Code VARCHAR(10) NOT NULL,
     Password VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB;
 
