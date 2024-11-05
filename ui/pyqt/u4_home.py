@@ -1,44 +1,62 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QSizePolicy
-from PyQt5.QtGui import QFont, QPixmap, QFontMetrics, QPainter, QColor
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
+                             QFrame, QSizePolicy, QGraphicsDropShadowEffect, QGridLayout)
+from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QLinearGradient
+from PyQt5.QtCore import Qt, QPropertyAnimation, QPoint
 
 
-class CustomButton(QPushButton):
+class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
-        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        self.setFixedHeight(50)
-        self.setCursor(Qt.PointingHandCursor)
-        self.adjustSize()
+        self.setStyleSheet("""
+            QPushButton {
+                background-color: #71B89A;
+                color: white;
+                border-radius: 25px;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 10px;
+            }
+            QPushButton:hover {
+                background-color: #5A9A7F;
+            }
+            QPushButton:pressed {
+                background-color: #4A8A6F;
+            }
+        """)
+        self.shadow = QGraphicsDropShadowEffect(self)
+        self.shadow.setBlurRadius(15)
+        self.shadow.setColor(QColor(0, 0, 0, 80))
+        self.shadow.setOffset(0, 5)
+        self.setGraphicsEffect(self.shadow)
 
-    def adjustSize(self):
-        font = QFont('Arial', 18, QFont.Bold)
-        metrics = QFontMetrics(font)
-        text_width = metrics.horizontalAdvance(self.text())
-        self.setFixedWidth(text_width + 40)  # Add some padding
+    def enterEvent(self, event):
+        self.animate_shadow(25, 0, 8)
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+    def leaveEvent(self, event):
+        self.animate_shadow(15, 0, 5)
 
-        # Draw rounded rectangle
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(QColor('white'))
-        painter.drawRoundedRect(self.rect(), 25, 25)
+    def animate_shadow(self, end_blur, end_x, end_y):
+        self.anim_blur = QPropertyAnimation(self.shadow, b"blurRadius")
+        self.anim_blur.setEndValue(end_blur)
+        self.anim_blur.setDuration(200)
 
-        # Draw text
-        painter.setPen(QColor('black'))
-        painter.setFont(QFont('Arial', 18, QFont.Bold))
-        painter.drawText(self.rect(), Qt.AlignCenter, self.text())
+        self.anim_offset = QPropertyAnimation(self.shadow, b"offset")
+        self.anim_offset.setEndValue(QPoint(end_x, end_y))
+        self.anim_offset.setDuration(200)
+
+        self.anim_blur.start()
+        self.anim_offset.start()
 
 
-class HomePage(QWidget):
-    def __init__(self):
+class MainWindow(QWidget):
+    def __init__(self, main_window):
         super().__init__()
+        self.main_window = main_window  # Reference to the main window with navigation methods
         self.initUI()
 
     def initUI(self):
+        self.setWindowTitle('Home Page')
         self.setFixedSize(1280, 720)
         self.setStyleSheet("background-color: #71B89A;")
 
@@ -46,56 +64,68 @@ class HomePage(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Header: Full width, with logo and title
+        main_layout.addWidget(self.createHeader())
+        main_layout.addWidget(self.createMainContent())
+        main_layout.addWidget(self.createBottomSection())
+
+    def createHeader(self):
         header_container = QWidget(self)
         header_container.setStyleSheet("background-color: white;")
         header_container.setFixedHeight(80)
         header_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        header_inner_layout = QHBoxLayout(header_container)
-        header_inner_layout.setContentsMargins(10, 0, 10, 0)  # Adjusted to match padding
-        header_inner_layout.setSpacing(10)  # Add space between elements
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(15)
+        shadow.setColor(QColor(0, 0, 0, 50))
+        shadow.setOffset(0, 2)
+        header_container.setGraphicsEffect(shadow)
 
-        # Logo
+        header_inner_layout = QHBoxLayout(header_container)
+        header_inner_layout.setContentsMargins(20, 0, 20, 0)
+        header_inner_layout.setSpacing(20)
+
         logo_label = QLabel(self)
-        pixmap = QPixmap('images/v20_308.png')  # Adjust this path as necessary
+        pixmap = QPixmap('images/v20_308.png')
         scaled_pixmap = pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         logo_label.setPixmap(scaled_pixmap)
         header_inner_layout.addWidget(logo_label, alignment=Qt.AlignLeft | Qt.AlignVCenter)
 
-        # Title "Home" next to logo
         header_title = QLabel('Home', self)
         header_title.setFont(QFont('Arial', 28, QFont.Bold))
-        header_title.setStyleSheet("color: black;")
+        header_title.setStyleSheet("color: #71B89A;")
         header_inner_layout.addWidget(header_title, alignment=Qt.AlignLeft | Qt.AlignVCenter)
 
         header_inner_layout.addStretch()
 
-        # Profile, History, and Sign Out buttons on the right
-        profile_button = self.create_button('Profile', 120, 50, bg_color="#71B89A", text_color="white")
-        history_button = self.create_button('History', 120, 50, bg_color="#71B89A", text_color="white")
-        signout_button = self.create_button('Sign Out', 120, 50, bg_color="#71B89A", text_color="white")
+        # Create Profile, History, and Sign Out buttons
+        for text in ["Profile", "History", "Sign Out"]:
+            button = AnimatedButton(text, self)
+            button.setFixedSize(120, 50)
+            if text == "Profile":
+                # Connect to show_profile_page in the main window
+                button.clicked.connect(self.main_window.show_profile_setting_gui)
+            elif text == "History":
+                # Connect to show_history_page in the main window
+                button.clicked.connect(self.main_window.show_history_page)
+            elif text == "Sign Out":
+                # Connect to show_login_page in the main window
+                button.clicked.connect(self.main_window.show_login_page)
+            header_inner_layout.addWidget(button, alignment=Qt.AlignRight | Qt.AlignVCenter)
 
-        header_inner_layout.addWidget(profile_button, alignment=Qt.AlignRight | Qt.AlignVCenter)
-        header_inner_layout.addWidget(history_button, alignment=Qt.AlignRight | Qt.AlignVCenter)
-        header_inner_layout.addWidget(signout_button, alignment=Qt.AlignRight | Qt.AlignVCenter)
+        return header_container
 
-        main_layout.addWidget(header_container)
+    def createMainContent(self):
+        content = QWidget()
+        content_layout = QGridLayout(content)
+        content_layout.setContentsMargins(50, 50, 50, 50)
 
-        # Centered content layout for welcome text and start button
-        centered_layout = QVBoxLayout()
-        centered_layout.setContentsMargins(0, 0, 0, 0)
-        centered_layout.setAlignment(Qt.AlignCenter)
-
-        # Welcome message
         welcome_label = QLabel("Welcome, John Doe", self)
         welcome_label.setFont(QFont('Arial', 48, QFont.Bold))
         welcome_label.setStyleSheet("color: white;")
         welcome_label.setAlignment(Qt.AlignCenter)
-        centered_layout.addWidget(welcome_label)
+        content_layout.addWidget(welcome_label, 0, 0, 1, 1, Qt.AlignCenter)
 
-        # Start button
-        start_button = QPushButton("Start", self)
+        start_button = AnimatedButton("Start", self)
         start_button.setFixedSize(800, 200)
         start_button.setFont(QFont('Arial', 36, QFont.Bold))
         start_button.setStyleSheet("""
@@ -103,46 +133,59 @@ class HomePage(QWidget):
                 background-color: #C1F0D1;
                 color: black;
                 border-radius: 100px;
+                text-align: center;
             }
             QPushButton:hover {
                 background-color: #A9E4BC;
             }
         """)
-        centered_layout.addWidget(start_button, alignment=Qt.AlignCenter)
-        start_button.clicked.connect(lambda: print("Start button clicked"))
+        content_layout.addWidget(start_button, 1, 0, 1, 1, Qt.AlignCenter)
+        start_button.clicked.connect(lambda: self.main_window.show_video_window())
 
-        main_layout.addLayout(centered_layout)
+        content_layout.setRowStretch(0, 1)
+        content_layout.setRowStretch(1, 1)
+        content_layout.setRowStretch(2, 1)
 
-        # Help button at the bottom
-        help_button_layout = QHBoxLayout()
-        help_button_layout.setContentsMargins(20, 0, 0, 20)  # Padding for bottom-left corner
-        help_button = self.create_button('Help', 120, 50, "white", "#39687C")
-        help_button_layout.addWidget(help_button, alignment=Qt.AlignLeft)
-        help_button_layout.addStretch()
-        main_layout.addLayout(help_button_layout)
+        return content
 
-        self.setLayout(main_layout)
+    def createBottomSection(self):
+        section = QFrame()
+        layout = QHBoxLayout(section)
+        layout.setContentsMargins(50, 0, 50, 20)
+        layout.setSpacing(10)
 
-    def create_button(self, text, width, height, bg_color, text_color):
-        button = QPushButton(text, self)
-        button.setFixedSize(width, height)
-        button.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {bg_color};
-                color: {text_color};
-                border-radius: {height // 2}px;
+        help_button = AnimatedButton('Help', self)
+        help_button.setFixedSize(120, 50)
+        help_button.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: #39687C;
+                border-radius: 25px;
                 font-size: 18px;
                 font-weight: bold;
-            }}
-            QPushButton:hover {{
-                background-color: #A9A9A9;
-            }}
+            }
+            QPushButton:hover {
+                background-color: #E0E0E0;
+            }
         """)
-        return button
+        layout.addWidget(help_button, alignment=Qt.AlignLeft | Qt.AlignBottom)
+        layout.addStretch()
+
+        return section
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        gradient = QLinearGradient(0, 0, 0, self.height())
+        gradient.setColorAt(0, QColor("#71B89A"))
+        gradient.setColorAt(1, QColor("#5A9A7F"))
+        painter.fillRect(self.rect(), gradient)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = HomePage()
-    window.show()
+    main_app_window = QWidget()  # Placeholder for the MainWindow with navigation methods
+    main_window = MainWindow(main_app_window)  # Pass the main window reference here
+    main_window.show()
     sys.exit(app.exec_())

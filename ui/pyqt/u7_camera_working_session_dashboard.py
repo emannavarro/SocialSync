@@ -1,11 +1,70 @@
 import sys
-
 import cv2
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QFrame
-from PyQt5.QtGui import QFont, QPixmap, QImage, QColor
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
+                             QFrame, QSizePolicy, QGraphicsDropShadowEffect, QProgressBar)
+from PyQt5.QtGui import QFont, QPixmap, QImage, QColor, QPainter, QLinearGradient
+from PyQt5.QtCore import Qt, QTimer, QPoint, QPropertyAnimation
 from backend.controllers.emotion_recognition import detect_face, detect_emotion, preprocess
 from ui.pyqt.cv_window import VideoWindow
+
+
+class AnimatedButton(QPushButton):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.setStyleSheet("""
+            QPushButton {
+                background-color: #71B89A;
+                color: white;
+                border-radius: 25px;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 10px;
+            }
+            QPushButton:hover {
+                background-color: #5A9A7F;
+            }
+            QPushButton:pressed {
+                background-color: #4A8A6F;
+            }
+        """)
+        self.shadow = QGraphicsDropShadowEffect(self)
+        self.shadow.setBlurRadius(15)
+        self.shadow.setColor(QColor(0, 0, 0, 80))
+        self.shadow.setOffset(0, 5)
+        self.setGraphicsEffect(self.shadow)
+
+    def enterEvent(self, event):
+        self.animate_shadow(25, 0, 8)
+
+    def leaveEvent(self, event):
+        self.animate_shadow(15, 0, 5)
+
+    def animate_shadow(self, end_blur, end_x, end_y):
+        self.anim_blur = QPropertyAnimation(self.shadow, b"blurRadius")
+        self.anim_blur.setEndValue(end_blur)
+        self.anim_blur.setDuration(200)
+
+        self.anim_offset = QPropertyAnimation(self.shadow, b"offset")
+        self.anim_offset.setEndValue(QPoint(end_x, end_y))
+        self.anim_offset.setDuration(200)
+
+        self.anim_blur.start()
+        self.anim_offset.start()
+
+
+class RoundedFrame(QFrame):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setStyleSheet("""
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        """)
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(20)
+        shadow.setColor(QColor(0, 0, 0, 60))
+        shadow.setOffset(0, 10)
+        self.setGraphicsEffect(shadow)
+
 
 class MainWindow(QWidget):
     def __init__(self, parent=None):
@@ -19,53 +78,58 @@ class MainWindow(QWidget):
 
     def initUI(self):
         self.setWindowTitle('Emotion Recognition UI')
-        self.setGeometry(100, 100, 1280, 720)
-        self.setStyleSheet("background-color: rgba(113,183,154,1);")
-        self.setFont(QFont("Josefin Sans", 12))
+        self.setFixedSize(1280, 720)
+        self.setStyleSheet("background-color: #71B89A;")
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
 
-        layout.addWidget(self.createHeader())
-        layout.addWidget(self.createMainContent())
-        layout.addWidget(self.createBottomSection())
+        main_layout.addWidget(self.createHeader())
+        main_layout.addWidget(self.createMainContent())
+        main_layout.addWidget(self.createBottomSection())
 
     def createHeader(self):
-        header = QWidget()
-        header.setFixedHeight(100)
-        header.setStyleSheet("background-color: white;")
-        header_layout = QHBoxLayout(header)
-        header_layout.setContentsMargins(50, 0, 50, 0)
+        header_container = QWidget(self)
+        header_container.setStyleSheet("background-color: white;")
+        header_container.setFixedHeight(80)
+        header_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        home_label = QLabel('Home', self)
-        home_label.setFont(QFont('Josefin Sans', 32, QFont.Bold))
-        home_label.setStyleSheet("color: black;")
-        header_layout.addWidget(home_label, alignment=Qt.AlignLeft | Qt.AlignVCenter)
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(15)
+        shadow.setColor(QColor(0, 0, 0, 50))
+        shadow.setOffset(0, 2)
+        header_container.setGraphicsEffect(shadow)
 
-        header_layout.addStretch()
+        header_inner_layout = QHBoxLayout(header_container)
+        header_inner_layout.setContentsMargins(20, 0, 20, 0)
+        header_inner_layout.setSpacing(20)
 
-        # Buttons for Profile, History, and Sign Out
+        logo_label = QLabel(self)
+        pixmap = QPixmap('images/v20_308.png')
+        scaled_pixmap = pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        logo_label.setPixmap(scaled_pixmap)
+        header_inner_layout.addWidget(logo_label, alignment=Qt.AlignLeft | Qt.AlignVCenter)
+
+        header_title = QLabel('Emotion Recognition', self)
+        header_title.setFont(QFont('Arial', 28, QFont.Bold))
+        header_title.setStyleSheet("color: #71B89A;")
+        header_inner_layout.addWidget(header_title, alignment=Qt.AlignLeft | Qt.AlignVCenter)
+
+        header_inner_layout.addStretch()
+
         for text in ["Profile", "History", "Sign Out"]:
-            button = QPushButton(text, self)
-            button.setFixedSize(150, 50)
-            button.setFont(QFont('Josefin Sans', 16))
-            button.setStyleSheet("""
-                color: white;
-                background-color: rgba(113, 184, 154, 1);
-                border-radius: 25px;
-            """)
+            button = AnimatedButton(text, self)
+            button.setFixedSize(120, 50)
             button.clicked.connect(lambda checked, btn=text: self.handle_button_click(btn))
-            header_layout.addWidget(button)
-            if text != "Sign Out":
-                header_layout.addSpacing(20)
+            header_inner_layout.addWidget(button, alignment=Qt.AlignRight | Qt.AlignVCenter)
 
-        return header
+        return header_container
 
     def handle_button_click(self, btn_name):
         """ Handle button clicks for Profile, History, and Sign Out """
         if btn_name == "Profile":
-            self.main_window.show_care_profile_settings()
+            self.main_window.show_profile_setting_gui()
         elif btn_name == "History":
             self.main_window.show_history_page()
         elif btn_name == "Sign Out":
@@ -75,98 +139,157 @@ class MainWindow(QWidget):
         content = QWidget()
         content_layout = QHBoxLayout(content)
         content_layout.setContentsMargins(50, 50, 50, 50)
-        content_layout.setSpacing(50)
+        content_layout.setSpacing(20)
+        content_layout.setAlignment(Qt.AlignCenter)
 
-        content_layout.addWidget(self.createEmotionBubble())
-        content_layout.addWidget(self.createConfidenceSection())
-        content_layout.addWidget(self.createVideoFeedSection())  # Use the video feed
+        content_layout.addWidget(self.createEmotionalFeedback(), alignment=Qt.AlignCenter)
+        content_layout.addWidget(self.createConfidenceSection(), alignment=Qt.AlignCenter)
+        content_layout.addWidget(self.createVideoFeedSection(), alignment=Qt.AlignCenter)
 
         return content
 
-    def createEmotionBubble(self):
-        bubble = QFrame()
-        bubble.setFixedSize(360, 360)
-        bubble.setStyleSheet("background-color: transparent;")
+    def createEmotionalFeedback(self):
+        feedback = RoundedFrame()
+        feedback.setFixedSize(320, 240)
 
-        oval = QLabel(bubble)
-        oval.setFixedSize(360, 360)
-        oval.setStyleSheet("""
-            background-color: white;
-            border-radius: 180px;
-        """)
+        layout = QVBoxLayout(feedback)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(8)
 
-        profile_logo = QLabel(bubble)
-        profile_logo.setPixmap(
-            QPixmap("images/v20_308.png").scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        profile_logo.move(20, 20)
+        header = QLabel("Emotional Feedback", feedback)
+        header.setStyleSheet("color: white; font-size: 22px; font-weight: bold;")
+        header.setAlignment(Qt.AlignCenter)
+        layout.addWidget(header)
 
         emotions = [
-            ("Annoyed: 90%", 90, 110, QColor(255, 193, 7)),
-            ("Happiness: 3%", 90, 170, QColor(12, 150, 67)),
-            ("Sad: 2%", 90, 230, QColor(77, 77, 77)),
-            ("Upset: 1%", 90, 290, QColor(191, 27, 27))
+            ("Annoyed", 90, QColor(255, 193, 7)),
+            ("Happiness", 3, QColor(46, 204, 113)),
+            ("Sad", 2, QColor(52, 152, 219)),
+            ("Upset", 1, QColor(231, 76, 60))
         ]
 
-        for text, x, y, color in emotions:
-            label = QLabel(text, bubble)
-            label.setStyleSheet(f"""
-                font-size: 22px;
-                color: rgb({color.red()}, {color.green()}, {color.blue()});
-                background-color: transparent;
-                font-weight: bold;
-            """)
-            label.move(x, y)
+        for emotion, percentage, color in emotions:
+            emotion_layout = QHBoxLayout()
+            emotion_label = QLabel(emotion, feedback)
+            emotion_label.setStyleSheet("color: white; font-size: 18px;")
+            percentage_label = QLabel(f"{percentage}%", feedback)
+            percentage_label.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
 
-        return bubble
+            progress_bar = QProgressBar(feedback)
+            progress_bar.setRange(0, 100)
+            progress_bar.setValue(percentage)
+            progress_bar.setTextVisible(False)
+            progress_bar.setFixedHeight(10)
+            progress_bar.setStyleSheet(f"""
+                QProgressBar {{
+                    background-color: rgba(255, 255, 255, 0.3);
+                    border-radius: 5px;
+                }}
+                QProgressBar::chunk {{
+                    background-color: {color.name()};
+                    border-radius: 5px;
+                }}
+            """)
+
+            emotion_layout.addWidget(emotion_label)
+            emotion_layout.addWidget(progress_bar)
+            emotion_layout.addWidget(percentage_label)
+
+            layout.addLayout(emotion_layout)
+
+        return feedback
 
     def createConfidenceSection(self):
-        section = QFrame()
-        section.setFixedSize(360, 360)
+        section = RoundedFrame()
+        section.setFixedSize(320, 240)
+
         layout = QVBoxLayout(section)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(10)
 
         confidence_label = QLabel("Confidence: 78%", section)
-        confidence_label.setStyleSheet("font-size: 32px; color: white;")
+        confidence_label.setStyleSheet("font-size: 22px; color: white; font-weight: bold;")
         confidence_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(confidence_label)
 
         annoyed_face_label = QLabel(section)
-        annoyed_face_label.setPixmap(
-            QPixmap("images/v25_545.png").scaled(300, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        annoyed_face_pixmap = QPixmap("images/v25_545.png").scaled(180, 180, Qt.KeepAspectRatio,
+                                                                   Qt.SmoothTransformation)
+        annoyed_face_label.setPixmap(annoyed_face_pixmap)
         annoyed_face_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(annoyed_face_label)
 
         return section
 
     def createVideoFeedSection(self):
-        """ This method sets up the video feed section. """
-        self.video_label = QLabel(self)
-        self.video_label.setFixedSize(360, 360)
-        return self.video_label
+        section = RoundedFrame()
+        section.setFixedSize(320, 240)
+
+        layout = QVBoxLayout(section)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(0)
+
+        self.video_label = QLabel(section)
+        self.video_label.setFixedSize(288, 208)
+        self.video_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.video_label)
+
+        return section
 
     def createBottomSection(self):
         section = QFrame()
         layout = QVBoxLayout(section)
-        layout.setContentsMargins(50, 20, 50, 50)
+        layout.setContentsMargins(50, 0, 50, 20)
+        layout.setSpacing(20)
 
         explanation = self.createExplanationSection()
         layout.addWidget(explanation)
 
-        help_button = QPushButton('Help', self)
-        help_button.setFixedSize(100, 40)
-        help_button.setFont(QFont('Josefin Sans', 16, QFont.Bold))
+        help_button = AnimatedButton('Help', self)
+        help_button.setFixedSize(120, 50)
         help_button.setStyleSheet("""
             QPushButton {
-                color: #5F9EA0;
                 background-color: white;
-                border: none;
-                border-radius: 20px;
+                color: #39687C;
+                border-radius: 25px;
+                font-size: 18px;
                 font-weight: bold;
             }
             QPushButton:hover {
-                background-color: #F0F0F0;
+                background-color: #E0E0E0;
             }
         """)
         layout.addWidget(help_button, alignment=Qt.AlignLeft)
+
+        return section
+
+    def createExplanationSection(self):
+        section = QLabel()
+        section.setFixedSize(1180, 240)
+        section.setText("""
+<p><strong style='font-size: 30px;'>Annoyed:</strong><br>
+Being annoyed is when you feel irritated or slightly angry because something is bothering you.</p>
+
+<p><strong style='font-size: 30px;'>Respond:</strong><br>
+• Take a deep breath<br>
+• Express your feelings calmly<br>
+• Try to address the source of annoyance</p>
+""")
+        section.setWordWrap(True)
+        section.setStyleSheet("""
+            font-size: 20px;
+            color: #333333;
+            background-color: #C1F0D1;
+            padding: 28px;
+            border-radius: 25px;
+        """)
+        section.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(20)
+        shadow.setColor(QColor(0, 0, 0, 40))
+        shadow.setOffset(0, 10)
+        section.setGraphicsEffect(shadow)
 
         return section
 
@@ -192,27 +315,8 @@ class MainWindow(QWidget):
             h, w, ch = rgb_image.shape
             bytes_per_line = ch * w
             qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-            self.video_label.setPixmap(QPixmap.fromImage(qt_image))
-
-    def createExplanationSection(self):
-        section = QLabel()
-        section.setText("""
-        <p><strong style='font-size: 24px;'>Upset:</strong><br>
-        Being upset is when you feel bad because something didn't go the way you hoped.</p>
-
-        <p><strong style='font-size: 24px;'>Respond:</strong><br>
-        Frown Lower your tone Tell them they are making you upset</p>
-        """)
-        section.setWordWrap(True)
-        section.setStyleSheet("""
-            font-size: 18px;
-            color: #333;
-            background-color: rgba(255,150,150,1);
-            padding: 30px;
-            border-radius: 20px;
-        """)
-        section.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        return section
+            self.video_label.setPixmap(
+                QPixmap.fromImage(qt_image).scaled(288, 208, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
     def closeEvent(self, event):
         """ Ensure video resources are released when closing the window. """
@@ -220,6 +324,15 @@ class MainWindow(QWidget):
         self.video_window.video.release()
         event.accept()
 
+    def paintEvent(self, event):
+        painter = QPainter(self)
+
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        gradient = QLinearGradient(0, 0, 0, self.height())
+        gradient.setColorAt(0, QColor("#71B89A"))
+        gradient.setColorAt(1, QColor("#5A9A7F"))
+        painter.fillRect(self.rect(), gradient)
 
 
 if __name__ == "__main__":

@@ -122,9 +122,10 @@ class CustomSlider(QSlider):
                                               sliderMax - sliderMin, opt.upsideDown)
 
 class VocalVisualSettingsScreen(QWidget):
-    def __init__(self):
+    def __init__(self, parent=None):
         super().__init__()
         self.initUI()
+        self.parent = parent
 
     def initUI(self):
         self.setFixedSize(1280, 720)
@@ -239,7 +240,10 @@ class VocalVisualSettingsScreen(QWidget):
         self.volume_slider.setValue(max(current_value - 1, 0))
 
     def on_confirm_clicked(self):
-        print("Confirm button clicked")
+        if self.parent:
+            self.parent.go_back()  # Uses go_back from the parent MainWindow to navigate back
+        else:
+            print("Confirm button clicked - no parent to navigate back.")
 
 
 if __name__ == '__main__':
