@@ -37,17 +37,21 @@ def register_user():
     middle_name = data.get('middle_name')
     last_name = data.get('last_name')
     email = data.get('email')
-    dob = data.get('dob')
-    sex = data.get('sex')
+    dob = data.get('date_of_birth')
+    sex = data.get('gender')
     country = data.get('country')
-    street_address = data.get('street_address')
+    street_address = data.get('address')
     city = data.get('city')
     state = data.get('state')
     zip_code = data.get('zip_code')
     password = data.get('password')
 
+
     # Check for required fields
     required_fields = [first_name, last_name, email, dob, sex, country, street_address, city, state, zip_code, password]
+    for i in required_fields:
+        print(i)
+
     if not all(required_fields):
         return jsonify({'error': 'Missing information'}), 400
 
