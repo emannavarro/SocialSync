@@ -34,17 +34,46 @@ with app.app_context():
 def register_user():
     data = request.json
     first_name = data.get('first_name')
+    middle_name = data.get('middle_name')
     last_name = data.get('last_name')
     email = data.get('email')
+    dob = data.get('date_of_birth')
+    sex = data.get('gender')
+    country = data.get('country')
+    street_address = data.get('address')
+    city = data.get('city')
+    state = data.get('state')
+    zip_code = data.get('zip_code')
     password = data.get('password')
 
-    if not (first_name and last_name and email and password):
+
+    # Check for required fields
+    required_fields = [first_name, last_name, email, dob, sex, country, street_address, city, state, zip_code, password]
+    for i in required_fields:
+        print(i)
+
+    if not all(required_fields):
         return jsonify({'error': 'Missing information'}), 400
 
+    # Hash the password
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
+    # Create new User instance
     try:
-        new_user = User(first_name=first_name, last_name=last_name, email=email, password=hashed_password)
+        new_user = User(
+            first_name=first_name,
+            middle_name=middle_name,
+            last_name=last_name,
+            email=email,
+            dob=dob,
+            sex=sex,
+            country=country,
+            street_address=street_address,
+            city=city,
+            state=state,
+            zip_code=zip_code,
+            password=hashed_password
+        )
         db.session.add(new_user)
         db.session.commit()
 
@@ -75,6 +104,26 @@ def login():
         }), 200
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
+
+@app.route('/getusers', methods=['GET'])
+def Getuser():
+    try:
+        users = User.query.all()  # Get all user records
+        # Prepare a list of dictionaries for each user
+        user_list = [
+            {
+                'user_id': user.id,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email
+            } for user in users
+        ]
+        return jsonify({
+            'message': 'Users retrieved successfully',
+            'users': user_list
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 

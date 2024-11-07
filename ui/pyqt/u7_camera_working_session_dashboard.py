@@ -245,6 +245,10 @@ class MainWindow(QWidget):
         explanation = self.createExplanationSection()
         layout.addWidget(explanation)
 
+        # Create a horizontal layout for the buttons
+        button_layout = QHBoxLayout()
+
+        # Add the existing Help button
         help_button = AnimatedButton('Help', self)
         help_button.setFixedSize(120, 50)
         help_button.setStyleSheet("""
@@ -259,9 +263,40 @@ class MainWindow(QWidget):
                 background-color: #E0E0E0;
             }
         """)
-        layout.addWidget(help_button, alignment=Qt.AlignLeft)
+        button_layout.addWidget(help_button)
+
+        # Add stretch to push buttons to opposite sides
+        button_layout.addStretch()
+
+        # Add the new End Session button
+        end_session_button = AnimatedButton('End Session', self)
+        end_session_button.setFixedSize(120, 50)
+        end_session_button.setStyleSheet("""
+            QPushButton {
+                background-color: #FF0000;
+                color: white;
+                border-radius: 25px;
+                font-size: 18px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #CC0000;
+            }
+        """)
+        end_session_button.clicked.connect(self.endSession)
+        button_layout.addWidget(end_session_button)
+
+        # Add the button layout to the main layout
+        layout.addLayout(button_layout)
 
         return section
+
+    def endSession(self):
+        """Handle the End Session button click"""
+        self.video_window.timer.stop()
+        self.video_window.video.release()
+        self.main_window.show_user_session_overview()
+
 
     def createExplanationSection(self):
         section = QLabel()
@@ -318,11 +353,6 @@ Being annoyed is when you feel irritated or slightly angry because something is 
             self.video_label.setPixmap(
                 QPixmap.fromImage(qt_image).scaled(288, 208, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
-    def closeEvent(self, event):
-        """ Ensure video resources are released when closing the window. """
-        self.video_window.timer.stop()
-        self.video_window.video.release()
-        event.accept()
 
     def paintEvent(self, event):
         painter = QPainter(self)
