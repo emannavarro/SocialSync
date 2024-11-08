@@ -350,10 +350,18 @@ Being annoyed is when you feel irritated or slightly angry because something is 
 
             # Process each detected face
             for (x, y, w, h) in faces:
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+                # Draw a rectangle around the detected face
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 4)
                 face_roi_gray = gray[y:y + h, x:x + w]
                 face_roi_gray = preprocess(face_roi_gray)
                 idx, conf = detect_emotion(face_roi_gray)
+
+                # Get the emotion label based on the detected index
+                emotion_label = self.video_window.class_names[idx]
+
+                # Display the emotion label on the bounding box with larger font
+                label_position = (x, y - 10) if y > 20 else (x, y + h + 20)
+                cv2.putText(frame, emotion_label, label_position, cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 255, 0), 4)
 
                 # Append current emotion data to history
                 self.emotion_history.append((idx, conf))
@@ -368,6 +376,7 @@ Being annoyed is when you feel irritated or slightly angry because something is 
             qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
             self.video_label.setPixmap(
                 QPixmap.fromImage(qt_image).scaled(288, 208, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
 
     def update_emotional_feedback(self):
         # Assuming `self.video_window.class_names` gives the list of emotions
