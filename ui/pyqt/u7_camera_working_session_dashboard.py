@@ -412,6 +412,7 @@ Being annoyed is when you feel irritated or slightly angry because something is 
         self.video_window.video.release()
         event.accept()
 
+
     def paintEvent(self, event):
         painter = QPainter(self)
 
