@@ -377,6 +377,7 @@ Being annoyed is when you feel irritated or slightly angry because something is 
                 QPixmap.fromImage(qt_image).scaled(288, 208, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
 
+
     def paintEvent(self, event):
         painter = QPainter(self)
 
