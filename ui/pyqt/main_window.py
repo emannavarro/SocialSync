@@ -19,7 +19,7 @@ from ui.pyqt.u7_camera_working_session_dashboard import MainWindow as CameraWork
 from ui.pyqt.u8_Emotion_session_annoyed import MainWindow as EmotionSessionAnnoyed
 from ui.pyqt.u9_profile_setting_gui import MainWindow as ProfileSettingGUI
 from ui.pyqt.u_vocal_and_visual_setting import MainWindow as VocalAndVisualSetting
-
+from ui.pyqt.u11_session_over_view import OverviewScreen as User_SessionOverview
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -167,6 +167,13 @@ class MainWindow(QMainWindow):
             self.stacked_widget.addWidget(self._vocal_and_visual_setting)
         return self._vocal_and_visual_setting
 
+    @property
+    def user_session_overview(self):
+        if not hasattr(self, '_user_session_overview'):
+            self._user_session_overview = User_SessionOverview(self)
+            self.stacked_widget.addWidget(self._user_session_overview)
+        return self._user_session_overview
+
     # Show methods using navigate_to to add pages to the history stack
     def show_login_page(self):
         self.navigate_to(self.login_page)
@@ -218,3 +225,6 @@ class MainWindow(QMainWindow):
 
     def show_vocal_and_visual_setting(self):
         self.navigate_to(self.vocal_and_visual_setting)
+
+    def show_user_session_overview(self):
+        self.navigate_to(self.user_session_overview)

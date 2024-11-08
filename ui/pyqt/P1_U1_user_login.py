@@ -1,7 +1,10 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QGraphicsDropShadowEffect
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, \
+    QGraphicsDropShadowEffect, QMessageBox
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QColor, QLinearGradient, QPen
 from PyQt5.QtCore import Qt, QRect, QPropertyAnimation, QEasingCurve, QPoint, QTimer
+from urllib3 import request
+import requests
 
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
@@ -158,8 +161,31 @@ class LoginPage(QWidget):
         painter.fillRect(self.rect(), gradient)
 
     def login(self):
-        # Placeholder for login functionality
-        self.parent.show_home_page()
+        # Get input from the fields
+        email = self.username_input.text()
+        password = self.password_input.text()
+
+        # Prepare the data payload
+        data = {
+            "email": email,
+            "password": password
+        }
+
+        try:
+            # Send the POST request with JSON data
+            response = requests.post("http://127.0.0.1:8081/login", json=data)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+
+            # Check if login was successful
+            if response.status_code == 200:
+                self.parent.show_home_page()
+            else:
+                QMessageBox.warning(self, "Login Failed", "Invalid credentials or server error.")
+
+        except requests.exceptions.RequestException as e:
+            # Handle connection errors or other exceptions
+            #QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
+            QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
 
 
     def register_page(self):
