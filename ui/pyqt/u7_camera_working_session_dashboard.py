@@ -6,8 +6,8 @@ import numpy as np
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
                              QFrame, QSizePolicy, QGraphicsDropShadowEffect, QProgressBar)
 from PyQt5.QtGui import QFont, QPixmap, QImage, QColor, QPainter, QLinearGradient
-from PyQt5.QtCore import Qt, QTimer, QPoint, QPropertyAnimation
-from backend.controllers.emotion_recognition import detect_face, detect_emotion, preprocess
+from PyQt5.QtCore import Qt, QPoint, QPropertyAnimation
+from ui.controllers.emotion_recognition import detect_face, detect_emotion, preprocess, EmotionDetectionWorker
 from ui.pyqt.cv_window import VideoWindow
 
 
@@ -75,12 +75,36 @@ class MainWindow(QWidget):
         self.main_window = parent  # Reference to the main stacked window
         self.initUI()
 
-        # Initialize video feed from VideoWindow
-        self.video_window = VideoWindow()  # Create an instance of VideoWindow for video handling
-        self.video_window.timer.timeout.connect(self.update_video_feed)  # Use the timer from VideoWindow
+        # Initialize emotion detection worker
+        self.worker = EmotionDetectionWorker()
+        self.worker.result_signal.connect(self.process_worker_result)
+        self.worker.start()
 
         # Initialize a deque to store the last 100 emotion detections
         self.emotion_history = deque(maxlen=100)
+
+    def process_worker_result(self, frame, emotions, confidence):
+        # Update emotion history
+        for emotion_label, conf in emotions.items():
+            idx = self.worker.class_names.index(emotion_label)
+            self.emotion_history.append((idx, conf))
+
+        # Update the UI elements directly
+        self.update_video_label(frame)
+        self.update_emotional_feedback()
+        self.update_confidence_label(confidence)
+
+    def update_video_label(self, frame):
+        # Convert the frame to QImage for PyQt display
+        rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        h, w, ch = rgb_image.shape
+        bytes_per_line = ch * w
+        qt_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(qt_image).scaled(288, 208, Qt.KeepAspectRatio, Qt.FastTransformation)
+        self.video_label.setPixmap(pixmap)
+
+    def update_confidence_label(self, confidence):
+        self.confidence_label.setText(f"Confidence: {int(confidence * 100)}%")
 
     def initUI(self):
         self.setWindowTitle('Emotion Recognition UI')
@@ -204,6 +228,7 @@ class MainWindow(QWidget):
             layout.addLayout(emotion_layout)
 
         return feedback
+
     def createConfidenceSection(self):
         section = RoundedFrame()
         section.setFixedSize(320, 240)
@@ -227,7 +252,6 @@ class MainWindow(QWidget):
 
         return section
 
-    # Update emotional feedback and confidence dynamically based on video feed data
     def update_feedback(self, emotions, confidence):
         # Update each emotion's progress bar and label
         for emotion, (color, label, progress_bar) in self.emotions_data.items():
@@ -376,8 +400,9 @@ Being annoyed is when you feel irritated or slightly angry because something is 
                 QPixmap.fromImage(qt_image).scaled(288, 208, Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
     def update_emotional_feedback(self):
-        # Assuming `self.video_window.class_names` gives the list of emotions
-        emotion_counts = np.zeros(len(self.video_window.class_names))
+        # Your provided update_emotional_feedback method
+        # Assuming `self.worker.class_names` gives the list of emotions
+        emotion_counts = np.zeros(len(self.worker.class_names))
         total_conf = 0
 
         # Sum the detected emotions and confidence levels from history
@@ -389,7 +414,7 @@ Being annoyed is when you feel irritated or slightly angry because something is 
         if total_conf > 0:
             emotion_percentages = (emotion_counts / total_conf) * 100
         else:
-            emotion_percentages = np.zeros(len(self.video_window.class_names))  # Set all to zero if no confidence
+            emotion_percentages = np.zeros(len(self.worker.class_names))  # Set all to zero if no confidence
 
         # Update the emotional feedback UI elements based on calculated percentages
         for i, (emotion, (color, label, progress_bar, percentage_label)) in enumerate(self.emotions_data.items()):
@@ -403,42 +428,42 @@ Being annoyed is when you feel irritated or slightly angry because something is 
             # Reset style if percentage is zero to ensure the bar appears empty
             if percentage == 0:
                 progress_bar.setStyleSheet(f"""
-                     QProgressBar {{
-                         background-color: rgba(255, 255, 255, 0.3);
-                         border-radius: 5px;
-                     }}
-                     QProgressBar::chunk {{
-                         background-color: rgba(0, 0, 0, 0);  # Transparent when 0%
-                         border-radius: 5px;
-                     }}
-                 """)
+                    QProgressBar {{
+                        background-color: rgba(255, 255, 255, 0.3);
+                        border-radius: 5px;
+                    }}
+                    QProgressBar::chunk {{
+                        background-color: rgba(0, 0, 0, 0);  # Transparent when 0%
+                        border-radius: 5px;
+                    }}
+                """)
             else:
                 progress_bar.setStyleSheet(f"""
-                     QProgressBar {{
-                         background-color: rgba(255, 255, 255, 0.3);
-                         border-radius: 5px;
-                     }}
-                     QProgressBar::chunk {{
-                         background-color: {color.name()};
-                         border-radius: 5px;
-                     }}
-                 """)
+                    QProgressBar {{
+                        background-color: rgba(255, 255, 255, 0.3);
+                        border-radius: 5px;
+                    }}
+                    QProgressBar::chunk {{
+                        background-color: {color.name()};
+                        border-radius: 5px;
+                    }}
+                """)
 
         # Update confidence with the average confidence across recent frames
         avg_confidence = total_conf / len(self.emotion_history) if self.emotion_history else 0
         self.confidence_label.setText(f"Confidence: {int(avg_confidence * 100)}%")
-    def endSession(self):
-        """Handle the End Session button click"""
-        self.video_window.timer.stop()
-        self.video_window.video.release()
-        self.main_window.show_user_session_overview()
-
 
     def closeEvent(self, event):
         """ Ensure video resources are released when closing the window. """
-        self.video_window.timer.stop()
-        self.video_window.video.release()
+        self.worker.stop()
+        self.worker.wait()
         event.accept()
+
+    def endSession(self):
+        """Handle the End Session button click"""
+        self.worker.stop()
+        self.worker.wait()
+        self.main_window.show_user_session_overview()
 
     def paintEvent(self, event):
         painter = QPainter(self)
