@@ -95,16 +95,68 @@ def login():
     user = User.query.filter_by(email=email).first()
 
     if user and bcrypt.check_password_hash(user.password, password):
+        # Include all user data except the password
+        user_info = {
+            "id": user.id,
+            "first_name": user.first_name,
+            "middle_name": user.middle_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "dob": user.dob.isoformat() if user.dob else None,
+            "sex": user.sex,
+            "country": user.country,
+            "street_address": user.street_address,
+            "city": user.city,
+            "state": user.state,
+            "zip_code": user.zip_code
+        }
         return jsonify({
             'message': 'Login successful',
-            'user_id': user.id,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'email': user.email
+            'user_info': user_info
         }), 200
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
 
+
+"""
+Retrieve user information based on the email provided in the request.
+"""
+
+
+@app.route('/user_info', methods=['GET'])
+def user_info():
+    # Get email from query parameters
+    email = request.args.get('email')
+
+    if not email:
+        return jsonify({"error": "Email parameter is required"}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if user:
+        # Construct a dictionary with user data, excluding sensitive fields like 'password'
+        user_info = {
+            "id": user.id,
+            "first_name": user.first_name,
+            "middle_name": user.middle_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "dob": user.dob.isoformat() if user.dob else None,
+            "sex": user.sex,
+            "country": user.country,
+            "street_address": user.street_address,
+            "city": user.city,
+            "state": user.state,
+            "zip_code": user.zip_code
+        }
+        return jsonify(user_info), 200
+    else:
+        return jsonify({"error": "User not found"}), 404
+
+
+########################################################################################################################
+"""
+This function is only for testing. It retrieves all users from the database and returns them as a JSON response.
+"""
 @app.route('/getusers', methods=['GET'])
 def Getuser():
     try:
