@@ -3,7 +3,7 @@ import cv2
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import QTimer
-from backend.controllers.emotion_recognition import detect_face, detect_emotion, preprocess
+from ui.controllers.emotion_recognition import detect_face, detect_emotion, preprocess
 
 class VideoWindow(QMainWindow):
     def __init__(self):

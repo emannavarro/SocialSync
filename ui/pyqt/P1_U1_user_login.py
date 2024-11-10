@@ -1,3 +1,4 @@
+from ui.utils.cache_utils import save_login_data
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, \
     QGraphicsDropShadowEffect, QMessageBox
@@ -178,15 +179,20 @@ class LoginPage(QWidget):
 
             # Check if login was successful
             if response.status_code == 200:
+                # Parse the JSON response
+                login_data = response.json()
+
+                # Save login data to a JSON file
+                save_login_data(login_data)
+
+                # Navigate to the home page or next component
                 self.parent.show_home_page()
             else:
                 QMessageBox.warning(self, "Login Failed", "Invalid credentials or server error.")
 
         except requests.exceptions.RequestException as e:
             # Handle connection errors or other exceptions
-            #QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
             QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")
-
 
     def register_page(self):
         # Placeholder for register page functionality
