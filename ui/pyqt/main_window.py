@@ -28,7 +28,7 @@ class MainWindow(QMainWindow):
         self.navigation_stack = []  # Track page history for Back navigation
 
         self.setWindowTitle("SocialSync")
-        self.setGeometry(100, 100, 1200, 800)
+        self.setGeometry(100, 100, 1200, 700)
 
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)

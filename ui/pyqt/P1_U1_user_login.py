@@ -82,9 +82,9 @@ class LoginPage(QWidget):
 
         # Logo
         logo_label = QLabel(self.container)
-        logo_pixmap = QPixmap("images/v26_35.png")
+        logo_pixmap = QPixmap("/Users/alizargari/PycharmProjects/SocialSync/ui/pyqt/images/v26_279.png")
         logo_label.setPixmap(logo_pixmap.scaled(180, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        logo_label.setFixedSize(180, 180)
+        logo_label.setFixedSize(170, 170)
         layout.addWidget(logo_label, alignment=Qt.AlignCenter)
 
         # SocialSync text
