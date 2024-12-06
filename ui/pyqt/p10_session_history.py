@@ -181,6 +181,18 @@ class HistoryPage(QMainWindow):
         layout.addStretch()
 
         back_button = AnimatedButton('Back')
+        back_button.setStyleSheet("""
+            QPushButton {
+                background-color: white;
+                color: #39687C;
+                border-radius: 25px;
+                font-size: 18px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #E0E0E0;
+            }
+        """)
         back_button.setFixedSize(120, 50)
         back_button.clicked.connect(self.go_back)  # Connect to go back function
         layout.addWidget(back_button, alignment=Qt.AlignRight | Qt.AlignBottom)
