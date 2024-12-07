@@ -1,6 +1,6 @@
 import requests
 
-url = 'https://socialsync-434423.wl.r.appspot.com/register'  # Replace with your actual endpoint URL
+url = 'http://127.0.0.1:8081/register'  # Replace with your actual endpoint URL
 
 # Sample data to send in the POST request
 data = {
