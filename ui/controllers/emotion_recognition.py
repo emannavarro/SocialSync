@@ -1,16 +1,21 @@
 import os
 import time
+import sys  # Added for PyInstaller compatibility
 
 import cv2
 import tensorflow as tf
 from PyQt5.QtCore import QThread, pyqtSignal
 import numpy as np
 
-# Get the directory of the current script
-script_dir = os.path.dirname(__file__)
+# Get the absolute path of the current directory
+base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
 
+# Get the parent directory
+parent_directory = os.path.abspath(os.path.join(base_path, os.pardir))
+
+print(parent_directory)
 # Construct the absolute path to the Haar Cascade file
-cascade_path = os.path.join(script_dir, '..', 'ml', 'haarcascade_frontalface_default.xml')
+cascade_path = os.path.join(parent_directory, 'ml', 'haarcascade_frontalface_default.xml')
 
 # Load the cascade
 cascade = cv2.CascadeClassifier(cascade_path)
@@ -19,8 +24,13 @@ cascade = cv2.CascadeClassifier(cascade_path)
 if cascade.empty():
     raise IOError(f"Failed to load Haar Cascade from {cascade_path}")
 
+# Construct the path to 'model.h5'
+model_path = os.path.join(parent_directory, 'ml', 'model.h5')
+
+#/Users/emannavarro/Documents/Fall_2024/CMPE_195b_Senior_Project_II/SocialSync/ui/controllers/ui/ml/model.h5
+
 # Load the model
-model = tf.keras.models.load_model("/Users/alizargari/PycharmProjects/SocialSync/ui/ml/model.h5")
+model = tf.keras.models.load_model(model_path)
 
 def detect_emotion(frame_p):
     emotion = model.predict(tf.expand_dims(frame_p, axis=0), verbose=0)

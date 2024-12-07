@@ -174,7 +174,7 @@ class LoginPage(QWidget):
 
         try:
             # Send the POST request with JSON data
-            response = requests.post("http://127.0.0.1:8081/login", json=data)
+            response = requests.post("https://socialsync-434423.wl.r.appspot.com/login", json=data)
             response.raise_for_status()  # Raise an exception for HTTP errors
 
             # Check if login was successful

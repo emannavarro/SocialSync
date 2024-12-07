@@ -217,7 +217,7 @@ class RegistrationForm(QWidget):
 
         try:
             # Send the POST request with JSON data
-            response = requests.post("http://127.0.0.1:8081/register", json=data)
+            response = requests.post("https://socialsync-434423.wl.r.appspot.com/register", json=data)
             response.raise_for_status()  # Raise an exception for HTTP errors
             print("Raw API response:", data) # Added line
 
@@ -245,7 +245,7 @@ class RegistrationForm(QWidget):
 
     def load_users(self):
         try:
-            response = requests.get("http://127.0.0.1:8081/getusers")
+            response = requests.get("https://socialsync-434423.wl.r.appspot.com/getusers")
             if response.status_code == 200:
                 data = response.json()
                 users = data.get('users', [])
