@@ -122,32 +122,36 @@ class EmotionDetectionWorker(QThread):
                 emotions = {}
                 total_confidence = 0
 
-                for (x, y, w, h) in faces:
-                    # Extract the face region
-                    face_roi_gray = gray[y:y+h, x:x+w]
-                    # Preprocess the face before detection
-                    face_roi_gray = preprocess(face_roi_gray)
-                    idx, conf = detect_emotion(face_roi_gray)
+                # Check if we have detected any faces
+                if len(faces) > 0:
+                    for (x, y, w, h) in faces:
+                        # Extract the face region
+                        face_roi_gray = gray[y:y+h, x:x+w]
+                        # Preprocess the face before detection
+                        face_roi_gray = preprocess(face_roi_gray)
+                        idx, conf = detect_emotion(face_roi_gray)
 
-                    emotion_label = self.class_names[idx]
-                    emotions[emotion_label] = emotions.get(emotion_label, 0) + conf
-                    total_confidence += conf
+                        emotion_label = self.class_names[idx]
+                        emotions[emotion_label] = emotions.get(emotion_label, 0) + conf
+                        total_confidence += conf
 
-                    # Draw bounding box and label on the frame
-                    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 1)
-                    label_position = (x, y - 10) if y > 20 else (x, y + h + 20)
-                    cv2.putText(
-                        frame,
-                        emotion_label,
-                        label_position,
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (0, 255, 0),
-                        1,
-                        cv2.LINE_AA,
-                    )
+                        # Draw bounding box and label on the frame
+                        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 1)
+                        label_position = (x, y - 10) if y > 20 else (x, y + h + 20)
+                        cv2.putText(
+                            frame,
+                            emotion_label,
+                            label_position,
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            0.5,
+                            (0, 255, 0),
+                            1,
+                            cv2.LINE_AA,
+                        )
+                    avg_confidence = total_confidence / len(faces)
+                else:
+                    avg_confidence = 0
 
-                avg_confidence = total_confidence / len(faces) if faces else 0
                 self.result_signal.emit(frame, emotions, avg_confidence)
 
             except Exception as e:
