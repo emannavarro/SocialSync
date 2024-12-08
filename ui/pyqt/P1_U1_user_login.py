@@ -6,7 +6,7 @@ from PyQt5.QtGui import QFont, QPixmap, QPainter, QColor, QLinearGradient, QPen
 from PyQt5.QtCore import Qt, QRect, QPropertyAnimation, QEasingCurve, QPoint, QTimer
 from urllib3 import request
 import requests
-
+import os
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
@@ -82,7 +82,8 @@ class LoginPage(QWidget):
 
         # Logo
         logo_label = QLabel(self.container)
-        logo_pixmap = QPixmap("/Users/alizargari/PycharmProjects/SocialSync/ui/pyqt/images/v26_279.png")
+        image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v26_279.png")
+        logo_pixmap = QPixmap(image_path)
         logo_label.setPixmap(logo_pixmap.scaled(180, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         logo_label.setFixedSize(170, 170)
         layout.addWidget(logo_label, alignment=Qt.AlignCenter)
