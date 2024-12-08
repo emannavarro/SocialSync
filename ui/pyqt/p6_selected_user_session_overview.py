@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy
 from PyQt5.QtGui import QFont, QPixmap, QPainter, QColor, QPen, QFontMetrics
 from PyQt5.QtCore import Qt, QRectF
-
+import os
 class CustomButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
@@ -110,7 +110,8 @@ class OverviewScreen(QWidget):
 
         # Logo
         logo_label = QLabel(self)
-        pixmap = QPixmap('images/v20_308.png')
+        image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v20_308.png")
+        pixmap = QPixmap(image_path)
         scaled_pixmap = pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         logo_label.setPixmap(scaled_pixmap)
         header_inner_layout.addWidget(logo_label, alignment=Qt.AlignLeft | Qt.AlignVCenter)

@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLa
                              QFrame, QSizePolicy, QGraphicsDropShadowEffect, QProgressBar, QScrollArea)
 from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QLinearGradient, QPainterPath
 from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QTimer
-
+import os
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
@@ -95,7 +95,8 @@ class MainWindow(QWidget):
         header_inner_layout.setSpacing(20)
 
         logo_label = QLabel(self)
-        pixmap = QPixmap('images/v20_308.png')
+        image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v20_308.png")
+        pixmap = QPixmap(image_path)
         scaled_pixmap = pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         logo_label.setPixmap(scaled_pixmap)
         header_inner_layout.addWidget(logo_label, alignment=Qt.AlignLeft | Qt.AlignVCenter)
@@ -192,7 +193,8 @@ class MainWindow(QWidget):
         layout.addWidget(confidence_label)
 
         annoyed_face_label = QLabel(section)
-        annoyed_face_pixmap = QPixmap("images/v25_545.png").scaled(180, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v25_545.png")
+        annoyed_face_pixmap = QPixmap(image_path2).scaled(180, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         annoyed_face_label.setPixmap(annoyed_face_pixmap)
         annoyed_face_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(annoyed_face_label)
@@ -208,7 +210,8 @@ class MainWindow(QWidget):
         layout.setSpacing(0)
 
         mona_lisa_label = QLabel(section)
-        original_pixmap = QPixmap("images/v32_188.png")
+        image_path3 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v32_188.png")
+        original_pixmap = QPixmap(image_path3)
         scaled_pixmap = original_pixmap.scaled(288, 208, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         mona_lisa_label.setPixmap(scaled_pixmap)
         mona_lisa_label.setAlignment(Qt.AlignCenter)

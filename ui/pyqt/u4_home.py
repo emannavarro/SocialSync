@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QVBoxLa
                              QFrame, QSizePolicy, QGraphicsDropShadowEffect, QGridLayout)
 from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QLinearGradient
 from PyQt5.QtCore import Qt, QPropertyAnimation, QPoint
-
+import os
 
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
@@ -85,7 +85,8 @@ class MainWindow(QWidget):
         header_inner_layout.setSpacing(20)
 
         logo_label = QLabel(self)
-        pixmap = QPixmap('images/v20_308.png')
+        image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v20_308.png")
+        pixmap = QPixmap(image_path)
         scaled_pixmap = pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         logo_label.setPixmap(scaled_pixmap)
         header_inner_layout.addWidget(logo_label, alignment=Qt.AlignLeft | Qt.AlignVCenter)
@@ -184,8 +185,9 @@ class MainWindow(QWidget):
 
 
 if __name__ == '__main__':
+    from ui.pyqt.main_window import MainWindow as AppMainWindow  # Import the actual MainWindow class
     app = QApplication(sys.argv)
-    main_app_window = QWidget()  # Placeholder for the MainWindow with navigation methods
+    main_app_window = AppMainWindow()  # Create an instance of your application's main window
     main_window = MainWindow(main_app_window)  # Pass the main window reference here
     main_window.show()
     sys.exit(app.exec_())

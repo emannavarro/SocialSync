@@ -9,7 +9,7 @@ from PyQt5.QtGui import QFont, QPixmap, QImage, QColor, QPainter, QLinearGradien
 from PyQt5.QtCore import Qt, QPoint, QPropertyAnimation
 from ui.controllers.emotion_recognition import detect_face, detect_emotion, preprocess, EmotionDetectionWorker
 from ui.pyqt.cv_window import VideoWindow
-
+import os
 
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
@@ -136,7 +136,8 @@ class MainWindow(QWidget):
         header_inner_layout.setSpacing(20)
 
         logo_label = QLabel(self)
-        pixmap = QPixmap('images/v20_308.png')
+        image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v20_308.png")
+        pixmap = QPixmap(image_path)
         scaled_pixmap = pixmap.scaled(60, 60, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         logo_label.setPixmap(scaled_pixmap)
         header_inner_layout.addWidget(logo_label, alignment=Qt.AlignLeft | Qt.AlignVCenter)
@@ -244,7 +245,8 @@ class MainWindow(QWidget):
         layout.addWidget(self.confidence_label)
 
         self.annoyed_face_label = QLabel(section)
-        annoyed_face_pixmap = QPixmap("images/v25_545.png").scaled(180, 180, Qt.KeepAspectRatio,
+        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v25_545.png")
+        annoyed_face_pixmap = QPixmap(image_path2).scaled(180, 180, Qt.KeepAspectRatio,
                                                                    Qt.SmoothTransformation)
         self.annoyed_face_label.setPixmap(annoyed_face_pixmap)
         self.annoyed_face_label.setAlignment(Qt.AlignCenter)
