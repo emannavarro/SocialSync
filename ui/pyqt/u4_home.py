@@ -62,13 +62,16 @@ class MainWindow(QWidget):
         self.setFixedSize(1280, 720)
         self.setStyleSheet("background-color: #71B89A;")
 
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
 
-        main_layout.addWidget(self.createHeader())
-        main_layout.addWidget(self.createMainContent())
-        main_layout.addWidget(self.createBottomSection())
+        self.main_layout.addWidget(self.createHeader())
+        self.content_widget = QWidget()
+        self.main_layout.addWidget(self.content_widget)
+        self.main_layout.addWidget(self.createBottomSection())
+
+        self.updateMainContent()
 
     def createHeader(self):
         header_container = QWidget(self)
@@ -114,10 +117,13 @@ class MainWindow(QWidget):
 
         return header_container
 
-    def createMainContent(self):
+    def updateMainContent(self):
+        # Clear the existing content
+        if self.content_widget.layout():
+            QWidget().setLayout(self.content_widget.layout())
+
         # Load user info from JSON file
         project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        print(project_root)
         data_dir = os.path.join(project_root, "data")
         json_path = os.path.join(data_dir, "login_data.json")
         with open(json_path, "r") as file:
@@ -127,8 +133,7 @@ class MainWindow(QWidget):
         first_name = login_data["user_info"]["first_name"]
         last_name = login_data["user_info"]["last_name"]
 
-        content = QWidget()
-        content_layout = QGridLayout(content)
+        content_layout = QGridLayout(self.content_widget)
         content_layout.setContentsMargins(50, 50, 50, 50)
 
         welcome_label = QLabel(f"Welcome, {first_name} {last_name}", self)
@@ -157,8 +162,6 @@ class MainWindow(QWidget):
         content_layout.setRowStretch(0, 1)
         content_layout.setRowStretch(1, 1)
         content_layout.setRowStretch(2, 1)
-
-        return content
 
     def createBottomSection(self):
         section = QFrame()
@@ -193,6 +196,10 @@ class MainWindow(QWidget):
         gradient.setColorAt(0, QColor("#71B89A"))
         gradient.setColorAt(1, QColor("#5A9A7F"))
         painter.fillRect(self.rect(), gradient)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.updateMainContent()
 
 
 if __name__ == '__main__':
