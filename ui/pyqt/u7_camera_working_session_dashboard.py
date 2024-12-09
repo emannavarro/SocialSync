@@ -9,7 +9,7 @@ from PyQt5.QtCore import Qt, QPoint, QPropertyAnimation, QTimer
 from ui.controllers.emotion_recognition import detect_emotion, preprocess, EmotionDetectionWorker
 import os
 
-
+# Tested and working
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
