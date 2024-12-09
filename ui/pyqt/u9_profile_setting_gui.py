@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QH
 from PyQt5.QtGui import QFont, QPixmap, QColor, QPainter, QLinearGradient
 from PyQt5.QtCore import Qt, QPropertyAnimation, QPoint
 import os
+import json
 
 class AnimatedButton(QPushButton):
     def __init__(self, text, parent=None):
@@ -151,14 +152,30 @@ class MainWindow(QMainWindow):
         left_layout.setSpacing(20)
 
         profile_pic_container = QLabel()
-        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v25_505.png")
+        image_path2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images/v14_189.png")
         profile_pixmap = QPixmap(image_path2)
         profile_pic_container.setPixmap(profile_pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         profile_pic_container.setAlignment(Qt.AlignCenter)
 
         left_layout.addWidget(profile_pic_container, alignment=Qt.AlignHCenter)
 
-        for text in ["Username", "Full Name", "Email"]:
+        # Load user info from JSON file
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        data_dir = os.path.join(project_root, "data")
+        json_path = os.path.join(data_dir, "login_data.json")
+
+        try:
+            with open(json_path, "r") as file:
+                login_data = json.load(file)
+
+            first_name = login_data["user_info"].get("first_name", "Unknown")
+            last_name = login_data["user_info"].get("last_name", "Unknown")
+            email = login_data["user_info"].get("email", "Email Not Available")
+        except (FileNotFoundError, KeyError, json.JSONDecodeError):
+            first_name, last_name, email = "Unknown", "Unknown", "Email Not Available"
+
+        # Add user details
+        for text in [f"First Name: {first_name}", f"Last Name: {last_name}", f"Email: {email}"]:
             label = QLabel(text)
             label.setStyleSheet("color: white; font-size: 24px; font-weight: bold; text-align: center;")
             label.setAlignment(Qt.AlignCenter)
